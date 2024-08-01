@@ -1,0 +1,38 @@
+---
+services:
+  caddy:
+    ports:
+      - ${COLLABORA_PORT:-6232}:${COLLABORA_PORT:-6232}
+
+  collabora:
+    image: ${COLLABORA_IMAGE:-collabora/code:24.04.5.1.1}
+    container_name: collabora
+    expose:
+      - 9980
+    cap_add:
+      - MKNOD
+    environment:
+      #- "aliasgroup1=" # comma separated list of domais, allowed to use collabora online. e.g. https://cloud.seafile.com
+      - "server_name=${SEAFILE_SERVER_HOSTNAME}:${COLLABORA_PORT:-6232}"
+      - "username=${COLLABORA_ADMIN:-admin}"
+      - "password=${COLLABORA_PW:-disabled_by_default}"
+      - "DONT_GEN_SSL_CERT=true"
+      - "TZ=${TIME_ZONE:-Europe/Berlin}"
+      - extra_params=--o:admin_console.enable=${COLLABORA_ENABLE_ADMIN_CONSOLE:-false}
+        --o:ssl.enable=false
+        --o:ssl.termination=true
+        --o:user_interface.mode=classic
+        --o:remote_font_config.url=${COLLABORA_REMOTE_FONT:-}
+        --o:logging.file[@enable]=${COLLABORA_ENABLE_FILE_LOGGING:-false}
+        --o:logging.file.property[0]=/opt/cool/logs/coolwsd.log
+    #volumes:
+    #  - "${COLLABORA_PATH:-/opt/collabora}/logs:/opt/cool/logs/" # chmod 777 needed
+    labels:
+      caddy: ${SEAFILE_SERVER_HOSTNAME}:${COLLABORA_PORT:-6232}
+      caddy.reverse_proxy: "{{upstreams 9980}}"
+    networks:
+      - frontend-net
+
+networks:
+  frontend-net:
+    name: frontend-net

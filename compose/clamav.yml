@@ -1,0 +1,10 @@
+---
+services:
+  av:
+    image: ${CLAMAV_IMAGE:-clamav/clamav:1.2.3-55}
+    restart: unless-stopped
+    container_name: seafile-clamav
+    profiles:
+      - clamav
+    networks:
+      - seafile-net
