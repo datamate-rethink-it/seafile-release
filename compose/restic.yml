@@ -1,7 +1,7 @@
 ---
 services:
   restic-backup:
-    image: ${SEAFILE_RESTIC_BACKUP_IMAGE:-seatable/restic-backup:1.2.8}
+    image: ${SEAFILE_RESTIC_BACKUP_IMAGE:-seatable/restic-backup:1.2.9}
     container_name: restic-backup
     restart: unless-stopped
     init: true
@@ -12,7 +12,7 @@ services:
       - /opt/restic/local:/local
       - /opt/restic/restore:/restore
       - /opt/restic/cache:/root/.cache/restic
-      - /opt/restic/logs:/var/log/
+      - /opt/restic/logs:/var/log/restic
     environment:
       - TZ=${TIME_ZONE}
       - RESTIC_REPOSITORY=${RESTIC_REPOSITORY:-/local}
