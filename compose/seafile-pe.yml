@@ -1,0 +1,108 @@
+---
+services:
+  seafile:
+    image: ${SEAFILE_IMAGE:-docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.11}
+    restart: unless-stopped
+    container_name: seafile-server
+    environment:
+      - DB_HOST=mariadb
+      - DB_ROOT_PASSWD=${SEAFILE_MYSQL_ROOT_PASSWORD:?Variable is not set or empty}
+      - TIME_ZONE=${TIME_ZONE}
+      - SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL:?Variable is not set or empty}
+      - SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD:?Variable is not set or empty}
+      - SEAFILE_SERVER_LETSENCRYPT=false
+      - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME}
+      - SEAFILE_SERVER_PROTOCOL=${SEAFILE_SERVER_PROTOCOL:-https}
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+    labels:
+      caddy: ${SEAFILE_SERVER_HOSTNAME}
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    volumes:
+      - /opt/seafile-server:/shared
+      - type: bind
+        source: "./seafile-license.txt"
+        target: "/shared/seafile/seafile-license.txt"
+        read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
+    depends_on:
+      - mariadb
+      - memcached
+      - elasticsearch
+    networks:
+      - frontend-net
+      - backend-seafile-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8000 || exit 1"]
+      interval: 20s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+
+  mariadb:
+    image: ${MARIADB_IMAGE:-mariadb:10.11.7-jammy}
+    restart: unless-stopped
+    container_name: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=${SEAFILE_MYSQL_ROOT_PASSWORD:?Variable is not set or empty}
+      - MYSQL_LOG_CONSOLE=true
+      - MARIADB_AUTO_UPGRADE=1
+    volumes:
+      - /opt/mariadb/db:/var/lib/mysql
+    networks:
+      - backend-seafile-net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/usr/local/bin/healthcheck.sh",
+          "--connect",
+          "--mariadbupgrade",
+          "--innodb_initialized",
+        ]
+      interval: 20s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+
+  memcached:
+    image: ${MEMCACHED_IMAGE:-memcached:1.6.27-bookworm}
+    restart: unless-stopped
+    container_name: seafile-memcached
+    entrypoint: memcached -m 256
+    networks:
+      - backend-seafile-net
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/11211'"]
+      interval: 20s
+      retries: 3
+      timeout: 5s
+
+  elasticsearch:
+    image: ${ELASTICSEARCH_IMAGE:-elasticsearch:8.6.2}
+    restart: unless-stopped
+    container_name: seafile-elasticsearch
+    environment:
+      - "discovery.type=single-node"
+      - "bootstrap.memory_lock=true"
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "xpack.security.enabled=false"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 2g
+    volumes:
+      - /opt/seafile-elasticsearch/data:/usr/share/elasticsearch/data
+    networks:
+      - backend-seafile-net
+    healthcheck:
+      test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+      interval: 60s
+      start_period: 60s
+      timeout: 10s
+      retries: 3
+
+networks:
+  frontend-net:
+    name: frontend-net
+  backend-seafile-net:
+    name: backend-seafile-net

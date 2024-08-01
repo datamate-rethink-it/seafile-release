@@ -1,1 +1,31 @@
-# seafile-release
+## Seafile Docker Compose Releases
+
+### Preparing a New Release
+
+1. Checkout a commit from the main branch.
+2. Create a lightweight tag on the commit in the format `v*.*.*` (full release) or `pre-v*.*.*` (pre-release) and push the tag to origin.
+3. All files in the 'compose/' directory will be uploaded to the release as a tarball (`seafile-compose.tar.gz`), and the release will be tagged with the version number from the git tag.
+
+```bash
+git tag v*.*.*
+git push origin v*.*.*
+```
+
+### Reference Releases
+
+This `latest` URL and API call will point to the **_latest full, non-pre, non-draft release._**\
+These are the recommended methods to get the latest stable, tested SeaTable release.\
+\
+**https://github.com/datamate-rethink-it/seafile-release/releases/latest/download/seafile-compose.tar.gz**
+
+```bash
+curl -s https://api.github.com/repos/datamate-rethink-it/seafile-release/releases/latest | \
+jq -r '.assets[0].browser_download_url'
+```
+
+---
+
+#### Download a specific Release (examples)
+
+https://github.com/datamate-rethink-it/seafile-release/releases/download/v4.3.10/seafile-compose.tar.gz\
+https://github.com/datamate-rethink-it/seafile-release/releases/download/pre-v4.4.4/seafile-compose.tar.gz
