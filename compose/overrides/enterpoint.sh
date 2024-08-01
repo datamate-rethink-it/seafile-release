@@ -53,6 +53,8 @@ fi
 cat /scripts/logrotate-conf/logrotate-cron >> /var/spool/cron/crontabs/root
 /usr/bin/crontab /var/spool/cron/crontabs/root
 
+# Create configuration files based on environment variables
+/scripts/generate-config-files.py
 
 # start cluster server
 if [[ $CLUSTER_SERVER == "true" && $SEAFILE_SERVER == "seafile-pro-server" ]] ;then

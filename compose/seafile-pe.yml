@@ -23,8 +23,8 @@ services:
         source: "./seafile-license.txt"
         target: "/shared/seafile/seafile-license.txt"
         read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
-      - /opt/seafile-compose/overrides/bootstrap.py:/scripts/bootstrap.py
-      - /opt/seafile-compose/overrides/seafile.nginx.conf.template:/templates/seafile.nginx.conf.template
+      - ./overrides/enterpoint.sh:/scripts/enterpoint.sh:ro
+      - ./overrides/generate-config-files.py:/scripts/generate-config-files.py:ro
     depends_on:
       - mariadb
       - memcached
