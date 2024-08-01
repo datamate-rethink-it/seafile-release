@@ -1,6 +1,6 @@
 ## Seafile Docker Compose Releases
 
-### How to install
+### How to install a new server
 
 Install basic tools
 
@@ -44,6 +44,12 @@ Now it is time for the first start:
 
 ```bash
 docker compose up -d
+```
+
+### How to get the latest yml files
+
+```bash
+cd /opt/seafile-compose && wget -c https://github.com/datamate-rethink-it/seafile-release/releases/latest/download/seafile-compose.tar.gz -O - | tar -xz -C /opt/seafile-compose
 ```
 
 ### Preparing a New Release
