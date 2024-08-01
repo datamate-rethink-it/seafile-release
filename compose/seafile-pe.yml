@@ -10,9 +10,9 @@ services:
       - TIME_ZONE=${TIME_ZONE}
       - SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL:?Variable is not set or empty}
       - SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD:?Variable is not set or empty}
-      - SEAFILE_SERVER_LETSENCRYPT=false
       - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME}
-      - SEAFILE_SERVER_PROTOCOL=${SEAFILE_SERVER_PROTOCOL:-https}
+      - SEAFILE_SERVER_LETSENCRYPT=false
+      - FORCE_HTTPS_IN_CONF=true
       - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
     labels:
       caddy: ${SEAFILE_SERVER_HOSTNAME}
@@ -23,6 +23,8 @@ services:
         source: "./seafile-license.txt"
         target: "/shared/seafile/seafile-license.txt"
         read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
+      - /opt/seafile-compose/overrides/bootstrap.py:/scripts/bootstrap.py
+      - /opt/seafile-compose/overrides/seafile.nginx.conf.template:/templates/seafile.nginx.conf.template
     depends_on:
       - mariadb
       - memcached
