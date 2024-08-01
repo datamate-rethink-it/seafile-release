@@ -1,5 +1,45 @@
 ## Seafile Docker Compose Releases
 
+### How to install
+
+Install basic tools
+
+```bash
+apt update && \
+apt -y install curl pwgen tree wget tar nano
+```
+
+Install Docker and Docker Compose Plugin
+
+```bash
+curl -fsSL get.docker.com | bash
+```
+
+Get Seafile Server
+
+```
+mkdir /opt/seafile-compose && \
+cd /opt/seafile-compose && \
+wget -c https://github.com/datamate-rethink-it/seafile-release/releases/latest/download/seafile-compose.tar.gz \
+-O - | tar -xz -C /opt/seafile-compose && \
+cp -n .env-release .env
+```
+
+Generate Secrets
+
+```bash
+sed -i "s/^SEAFILE_ADMIN_PASSWORD=.*/SEAFILE_ADMIN_PASSWORD=$(pwgen 40 1)/" .env
+sed -i "s/^SEAFILE_MYSQL_ROOT_PASSWORD=.*/SEAFILE_MYSQL_ROOT_PASSWORD=$(pwgen 40 1)/" .env
+```
+
+Complete `.env` and copy `seafile-license.txt` to the `/opt/seafile-compose` folder. A license is only required for more than 3 users.
+
+Now it is time for the first start:
+
+```bash
+docker compose up -d
+```
+
 ### Preparing a New Release
 
 1. Checkout a commit from the main branch.
