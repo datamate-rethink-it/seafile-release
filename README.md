@@ -25,6 +25,12 @@ wget -c https://github.com/datamate-rethink-it/seafile-release/releases/latest/d
 cp -n .env-release .env
 ```
 
+Login to Seafile's private repository
+
+```bash
+docker login -u seafile -p zjkmid6rQibdZ=uJMuWS docker.seadrive.org
+```
+
 Generate Secrets
 
 ```bash
