@@ -92,6 +92,10 @@ def generate_conf_file(path: str, prefix: str):
 
     config = configparser.ConfigParser()
 
+    # Make ConfigParser case sensitive
+    # Otherwise it lowercases keys before writing them to a file, but ccnet requires them to be in uppercase (e.g. 'HOST')
+    config.optionxform = str
+
     for key, value in variables.items():
         parts = key.split('__')
 
