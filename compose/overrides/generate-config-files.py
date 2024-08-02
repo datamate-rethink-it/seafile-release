@@ -5,6 +5,8 @@ import logging
 import os
 import sys
 
+from bootstrap import get_proto
+
 logger = logging.getLogger('generate-config-files')
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -15,6 +17,7 @@ SEAFDAV_CONF_PATH = os.path.join(CONFIG_DIR, 'seafdav.conf')
 SEAFEVENTS_CONF_PATH = os.path.join(CONFIG_DIR, 'seafevents.conf')
 SEAFILE_CONF_PATH = os.path.join(CONFIG_DIR, 'seafile.conf')
 GUNICORN_CONF_PATH = os.path.join(CONFIG_DIR, 'gunicorn.conf.py')
+SEAHUB_SETTINGS_PATH = os.path.join(CONFIG_DIR, 'seahub_settings.py')
 
 # Specify default values
 # Note: configparser only allows strings as values
@@ -147,6 +150,93 @@ limit_request_line = 8190
         # Use lstrip() to remove leading whitespace
         file.write(config.lstrip())
 
+def generate_seahub_settings_file(path: str):
+    required_variables = [
+        'SEAHUB_SECRET_KEY',
+        'SEAFILE_SERVER_HOSTNAME',
+        # TODO: Should these two environment variable be named differently? Or keep the names for backwards compatibility?
+        'DB_HOST',
+        'DB_ROOT_PASSWD',
+    ]
+
+    # Check that required variables are set
+    for variable in required_variables:
+        if os.environ.get(variable) is None:
+            logger.error('Error: Variable "%s" must be provided', variable)
+            sys.exit(1)
+
+    SECRET_KEY = os.environ['SEAHUB_SECRET_KEY']
+    SEAFILE_SERVER_HOSTNAME = os.environ['SEAFILE_SERVER_HOSTNAME']
+    DB_PASSWORD = os.environ['DB_ROOT_PASSWD']
+    DB_HOST= os.environ['DB_HOST']
+
+    database_config_template = """
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': '%(name)s',
+        'USER': '%(username)s',
+        'PASSWORD': '%(password)s',
+        'HOST': '%(host)s',
+        'PORT': '%(port)s',
+        'OPTIONS': {'charset': 'utf8mb4'},
+    }
+}
+"""
+
+    database_config = {
+        # TODO: Which values should be configurable through environment variables?
+        'name': 'seahub_db',
+        # TODO: Use root or create database user before running this script?
+        'username': 'root',
+        # Use [] to throw if variable is not set
+        'password': DB_PASSWORD,
+        'host': DB_HOST,
+        'port': '3306',
+    }
+
+    cache_config_template = """
+CACHES = {
+    'default': {
+        'BACKEND': '%(backend)s',
+        'LOCATION': '%(host)s:%(port)s',
+    },
+    'locmem': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    },
+}
+"""
+
+    cache_config = {
+        # Should use memcached by default
+        # TODO: Allow usage of Redis instead of memcached based on environment variables
+        # TODO: Host + port should be configurable through environment variables
+        'backend': 'django_pylibmc.memcached.PyLibMCCache',
+        'host': 'memcached',
+        'port': '11211'
+    }
+
+    if not os.path.exists(path):
+        logger.info(f'Generating {os.path.basename(path)} since it does not exist yet')
+    else:
+        logger.info(f'Updating {os.path.basename(path)}')
+
+    with open(path, 'w') as file:
+        file.writelines([
+            "SECRET_KEY = '%s'" % SECRET_KEY, '\n',
+            "SERVICE_URL = 'http://%s'" % SEAFILE_SERVER_HOSTNAME, '\n'
+        ])
+
+        file.write(database_config_template % database_config)
+        file.write(cache_config_template % cache_config)
+
+        file.writelines([
+            '\n',
+            "COMPRESS_CACHE_BACKEND = 'locmem'\n",
+            "TIME_ZONE = '%s'\n" % os.getenv('TIME_ZONE', default='Etc/UTC'),
+            "FILE_SERVER_ROOT = '{proto}://{domain}/seafhttp'".format(proto=get_proto(), domain=SEAFILE_SERVER_HOSTNAME),
+        ])
+
 if __name__ == '__main__':
     if not os.path.exists(CONFIG_DIR):
         os.makedirs(CONFIG_DIR)
@@ -157,4 +247,4 @@ if __name__ == '__main__':
     generate_conf_file(path=SEAFILE_CONF_PATH, prefix='SEAFILE__')
 
     generate_gunicorn_config_file(path=GUNICORN_CONF_PATH)
-    # TODO: Generate seahub_settings.py
+    generate_seahub_settings_file(path=SEAHUB_SETTINGS_PATH)
