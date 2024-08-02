@@ -160,91 +160,92 @@ def init_seafile_server():
     #     .format(get_script('setup-seafile-mysql.py')))
 
     # Change the script to disable check MYSQL_USER_HOST
-    call('''sed -i -e '/def validate_mysql_user_host(self, host)/a \ \ \ \ \ \ \ \ return host' {}'''
-        .format(get_script('setup-seafile-mysql.py')))
+    #call('''sed -i -e '/def validate_mysql_user_host(self, host)/a \ \ \ \ \ \ \ \ return host' {}'''
+     #   .format(get_script('setup-seafile-mysql.py')))
 
-    call('''sed -i -e '/def validate_mysql_host(self, host)/a \ \ \ \ \ \ \ \ return host' {}'''
-        .format(get_script('setup-seafile-mysql.py')))
+    #call('''sed -i -e '/def validate_mysql_host(self, host)/a \ \ \ \ \ \ \ \ return host' {}'''
+    #    .format(get_script('setup-seafile-mysql.py')))
 
-    setup_script = get_script('setup-seafile-mysql.sh')
-    call('{} auto -n seafile'.format(setup_script), env=env)
+    #setup_script = get_script('setup-seafile-mysql.sh')
+    #call('python3 /scripts/setup-seafile-mysql.py auto -n seafile', env=env)
 
-    domain = get_conf('SEAFILE_SERVER_HOSTNAME', 'seafile.example.com')
-    proto = get_proto()
-    with open(join(topdir, 'conf', 'seahub_settings.py'), 'a+') as fp:
-        fp.write('\n')
-        fp.write("""CACHES = {
-    'default': {
-        'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
-        'LOCATION': 'memcached:11211',
-    },
-    'locmem': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    },
-}
-COMPRESS_CACHE_BACKEND = 'locmem'""")
-        fp.write('\n')
-        fp.write("TIME_ZONE = '{time_zone}'".format(time_zone=os.getenv('TIME_ZONE',default='Etc/UTC')))
-        fp.write('\n')
-        fp.write('FILE_SERVER_ROOT = "{proto}://{domain}/seafhttp"'.format(proto=proto, domain=domain))
-        fp.write('\n')
+    # return
 
-        ## CUSTOM: write config to seahub_settings.py ...
-        fp.write('\n')
-        fp.write('CSRF_TRUSTED_ORIGINS = ["{proto}://{domain}"]'.format(proto=proto, domain=domain))
-        fp.write('\n')
-        fp.write('SERVICE_URL = "{proto}://{domain}"'.format(proto=proto, domain=domain))
+#     domain = get_conf('SEAFILE_SERVER_HOSTNAME', 'seafile.example.com')
+#     proto = get_proto()
+#     with open(join(topdir, 'conf', 'seahub_settings.py'), 'a+') as fp:
+#         fp.write('\n')
+#         fp.write("""CACHES = {
+#     'default': {
+#         'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
+#         'LOCATION': 'memcached:11211',
+#     },
+#     'locmem': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#     },
+# }
+# COMPRESS_CACHE_BACKEND = 'locmem'""")
+#         fp.write('\n')
+#         fp.write("TIME_ZONE = '{time_zone}'".format(time_zone=os.getenv('TIME_ZONE',default='Etc/UTC')))
+#         fp.write('\n')
+#         fp.write('FILE_SERVER_ROOT = "{proto}://{domain}/seafhttp"'.format(proto=proto, domain=domain))
+#         fp.write('\n')
 
-    # Disabled the Elasticsearch process on Seafile-container
-    # Connection to the Elasticsearch-container
-    if os.path.exists(join(topdir, 'conf', 'seafevents.conf')):
-        with open(join(topdir, 'conf', 'seafevents.conf'), 'r') as fp:
-            fp_lines = fp.readlines()
-            if '[INDEX FILES]\n' in fp_lines:
-               insert_index = fp_lines.index('[INDEX FILES]\n') + 1
-               insert_lines = ['es_port = 9200\n', 'es_host = elasticsearch\n', 'external_es_server = true\n']
-               for line in insert_lines:
-                   fp_lines.insert(insert_index, line)
-        with open(join(topdir, 'conf', 'seafevents.conf'), 'w') as fp:
-            fp.writelines(fp_lines)
+#         ## CUSTOM: write config to seahub_settings.py ...
+#         fp.write('\n')
+#         fp.write('CSRF_TRUSTED_ORIGINS = ["{proto}://{domain}"]'.format(proto=proto, domain=domain))
+#         fp.write('\n')
+#         fp.write('SERVICE_URL = "{proto}://{domain}"'.format(proto=proto, domain=domain))
 
-    # Modify seafdav config
-    if os.path.exists(join(topdir, 'conf', 'seafdav.conf')):
-        with open(join(topdir, 'conf', 'seafdav.conf'), 'r') as fp:
-            fp_lines = fp.readlines()
-            if 'share_name = /\n' in fp_lines:
-               replace_index = fp_lines.index('share_name = /\n')
-               replace_line = 'share_name = /seafdav\n'
-               fp_lines[replace_index] = replace_line
+#     # Disabled the Elasticsearch process on Seafile-container
+#     # Connection to the Elasticsearch-container
+#     if os.path.exists(join(topdir, 'conf', 'seafevents.conf')):
+#         with open(join(topdir, 'conf', 'seafevents.conf'), 'r') as fp:
+#             fp_lines = fp.readlines()
+#             if '[INDEX FILES]\n' in fp_lines:
+#                insert_index = fp_lines.index('[INDEX FILES]\n') + 1
+#                insert_lines = ['es_port = 9200\n', 'es_host = elasticsearch\n', 'external_es_server = true\n']
+#                for line in insert_lines:
+#                    fp_lines.insert(insert_index, line)
+#         with open(join(topdir, 'conf', 'seafevents.conf'), 'w') as fp:
+#             fp.writelines(fp_lines)
 
-        with open(join(topdir, 'conf', 'seafdav.conf'), 'w') as fp:
-            fp.writelines(fp_lines)
+#     # Modify seafdav config
+#     if os.path.exists(join(topdir, 'conf', 'seafdav.conf')):
+#         with open(join(topdir, 'conf', 'seafdav.conf'), 'r') as fp:
+#             fp_lines = fp.readlines()
+#             if 'share_name = /\n' in fp_lines:
+#                replace_index = fp_lines.index('share_name = /\n')
+#                replace_line = 'share_name = /seafdav\n'
+#                fp_lines[replace_index] = replace_line
 
-    # CUSTOM: activate notification server
-    if os.path.exists(join(topdir, 'conf', 'seafile.conf')):
-        with open(join(topdir, 'conf', 'seafile.conf'), 'r') as fp:
-            fp_lines = fp.readlines()
+#         with open(join(topdir, 'conf', 'seafdav.conf'), 'w') as fp:
+#             fp.writelines(fp_lines)
 
-        # Flags to track whether we're in the [notification] section and if we've modified the enabled setting
-        in_notification_section = False
-        modified = False
+#     # CUSTOM: activate notification server
+#     if os.path.exists(join(topdir, 'conf', 'seafile.conf')):
+#         with open(join(topdir, 'conf', 'seafile.conf'), 'r') as fp:
+#             fp_lines = fp.readlines()
 
-        # Process each line
-        for i, line in enumerate(fp_lines):
-            if '[notification]' in line:
-                in_notification_section = True
-            elif in_notification_section and 'enabled = false' in line and not modified:
-                fp_lines[i] = 'enabled = true\n'
-                modified = True
-            # If we encounter another section, stop looking for the enabled setting
-            elif in_notification_section and line.startswith('['):
-                break
+#         # Flags to track whether we're in the [notification] section and if we've modified the enabled setting
+#         in_notification_section = False
+#         modified = False
 
-        # Write the modified content back to the file
-        with open(join(topdir, 'conf', 'seafile.conf'), 'w') as fp:
-            fp.writelines(fp_lines)
-    # CUSTOM END
+#         # Process each line
+#         for i, line in enumerate(fp_lines):
+#             if '[notification]' in line:
+#                 in_notification_section = True
+#             elif in_notification_section and 'enabled = false' in line and not modified:
+#                 fp_lines[i] = 'enabled = true\n'
+#                 modified = True
+#             # If we encounter another section, stop looking for the enabled setting
+#             elif in_notification_section and line.startswith('['):
+#                 break
 
+#         # Write the modified content back to the file
+#         with open(join(topdir, 'conf', 'seafile.conf'), 'w') as fp:
+#             fp.writelines(fp_lines)
+#     # CUSTOM END
 
     # After the setup script creates all the files inside the
     # container, we need to move them to the shared volume

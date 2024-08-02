@@ -25,6 +25,7 @@ services:
         read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
       - ./overrides/enterpoint.sh:/scripts/enterpoint.sh:ro
       - ./overrides/generate-config-files.py:/scripts/generate-config-files.py:ro
+      - ./overrides/bootstrap.py:/scripts/bootstrap.py:ro
     depends_on:
       - mariadb
       - memcached
