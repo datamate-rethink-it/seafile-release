@@ -14,6 +14,7 @@ CCNET_CONF_PATH = os.path.join(CONFIG_DIR, 'ccnet.conf')
 SEAFDAV_CONF_PATH = os.path.join(CONFIG_DIR, 'seafdav.conf')
 SEAFEVENTS_CONF_PATH = os.path.join(CONFIG_DIR, 'seafevents.conf')
 SEAFILE_CONF_PATH = os.path.join(CONFIG_DIR, 'seafile.conf')
+GUNICORN_CONF_PATH = os.path.join(CONFIG_DIR, 'gunicorn.conf.py')
 
 # Specify default values
 # Note: configparser only allows strings as values
@@ -114,6 +115,38 @@ def generate_conf_file(path: str, prefix: str):
     with open(path, 'w') as file:
         config.write(file)
 
+def generate_gunicorn_config_file(path: str):
+    # TODO: Can pids_dir be hardcoded? It was dynamic in setup-seafile-mysql.py
+
+    # Source: https://github.com/haiwen/seafile-docker/blob/da9bf740e4a093a0c25c4ae9a09e08069194fc73/scripts/scripts_11.0/setup-seafile-mysql.py#L1213
+    config = """
+import os
+
+daemon = True
+workers = 5
+
+# default localhost:8000
+bind = "127.0.0.1:8000"
+
+# Pid
+pids_dir = '/opt/seafile/pids'
+pidfile = os.path.join(pids_dir, 'seahub.pid')
+
+# for file upload, we need a longer timeout value (default is only 30s, too short)
+timeout = 1200
+
+limit_request_line = 8190
+"""
+
+    if not os.path.exists(path):
+        logger.info(f'Generating {os.path.basename(path)} since it does not exist yet')
+    else:
+        logger.info(f'Updating {os.path.basename(path)}')
+
+    with open(path, 'w') as file:
+        # Use lstrip() to remove leading whitespace
+        file.write(config.lstrip())
+
 if __name__ == '__main__':
     if not os.path.exists(CONFIG_DIR):
         os.makedirs(CONFIG_DIR)
@@ -123,5 +156,5 @@ if __name__ == '__main__':
     generate_conf_file(path=SEAFEVENTS_CONF_PATH, prefix='SEAFEVENTS__')
     generate_conf_file(path=SEAFILE_CONF_PATH, prefix='SEAFILE__')
 
-    # TODO: Generate gunicorn.conf.py
+    generate_gunicorn_config_file(path=GUNICORN_CONF_PATH)
     # TODO: Generate seahub_settings.py
