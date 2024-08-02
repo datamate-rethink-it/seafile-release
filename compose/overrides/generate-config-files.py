@@ -11,7 +11,7 @@ logger = logging.getLogger('generate-config-files')
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
-CONFIG_DIR = '/shared/seafile/conf'
+CONFIG_DIR = '/opt/seafile/conf'
 CCNET_CONF_PATH = os.path.join(CONFIG_DIR, 'ccnet.conf')
 SEAFDAV_CONF_PATH = os.path.join(CONFIG_DIR, 'seafdav.conf')
 SEAFEVENTS_CONF_PATH = os.path.join(CONFIG_DIR, 'seafevents.conf')
