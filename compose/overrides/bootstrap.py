@@ -146,9 +146,9 @@ def init_seafile_server():
     env = {
         'SERVER_NAME': 'seafile',
         'SERVER_IP': get_conf('SEAFILE_SERVER_HOSTNAME', 'seafile.example.com'),
-        'MYSQL_USER': 'seafile',
-        'MYSQL_USER_PASSWD': str(uuid.uuid4()),
-        'MYSQL_USER_HOST': '%.%.%.%',
+        'MYSQL_USER': 'root',
+        'MYSQL_USER_PASSWD': get_conf('DB_ROOT_PASSWD', ''),
+        'MYSQL_USER_HOST': '%',
         'MYSQL_HOST': get_conf('DB_HOST', '127.0.0.1'),
         'MYSQL_PORT': get_conf('DB_PORT', '3306'),
         # Default MariaDB root user has empty password and can only connect from localhost.
@@ -159,15 +159,17 @@ def init_seafile_server():
     # call('''sed -i -e 's/if not mysql_root_passwd/if not mysql_root_passwd and "MYSQL_ROOT_PASSWD" not in os.environ/g' {}'''
     #     .format(get_script('setup-seafile-mysql.py')))
 
+    # [sha] The repository contains the patched version of setup-seafile-mysql.py which short-circuits validate_mysql_user_host()/validate_mysql_host()!
+
     # Change the script to disable check MYSQL_USER_HOST
     #call('''sed -i -e '/def validate_mysql_user_host(self, host)/a \ \ \ \ \ \ \ \ return host' {}'''
-     #   .format(get_script('setup-seafile-mysql.py')))
+    #   .format(get_script('setup-seafile-mysql.py')))
 
     #call('''sed -i -e '/def validate_mysql_host(self, host)/a \ \ \ \ \ \ \ \ return host' {}'''
-    #    .format(get_script('setup-seafile-mysql.py')))
+    #   .format(get_script('setup-seafile-mysql.py')))
 
-    #setup_script = get_script('setup-seafile-mysql.sh')
-    #call('python3 /scripts/setup-seafile-mysql.py auto -n seafile', env=env)
+    setup_script = get_script('setup-seafile-mysql.sh')
+    call('{} auto -n seafile'.format(setup_script), env=env)
 
     # return
 

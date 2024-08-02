@@ -181,6 +181,8 @@ Press ENTER to continue
 
     @staticmethod
     def write_config(cp, fn):
+        print('ERROR: write_config() should never be called!', flush=True)
+        sys.exit(1)
         '''Return a case sensitive ConfigParser by reading the file "fn"'''
         with open(fn, 'w') as fp:
             cp.write(fp)
@@ -851,6 +853,7 @@ class CcnetConfigurator(AbstractConfigurator):
                                    passwd=db_config.seafile_mysql_password,
                                    db=db_config.ccnet_db_name)
         except Exception as e:
+            print(e, flush=True)
             if isinstance(e, pymysql.err.OperationalError):
                 Utils.error('Failed to connect to mysql database %s: %s' % (db_config.ccnet_db_name, e.args[1]))
             else:
@@ -1389,6 +1392,8 @@ def set_file_perm():
         seafile_config.seafile_dir,
         seahub_config.seahub_settings_py,
     ]
+
+    print(dirs)
     for fpath in files:
         os.chmod(fpath, filemode)
     for dpath in dirs:
@@ -1564,14 +1569,17 @@ def main():
 
     # Part 2: generate configuration
     db_config.generate()
-    ccnet_config.generate()
-    seafile_config.generate()
-    seafdav_config.generate()
-    gunicorn_config.generate()
-    seahub_config.generate()
-    if env_mgr.is_pro:
-        pro_config.generate()
-        pro_config.do_syncdb()
+    #ccnet_config.generate()
+    #seafile_config.generate()
+    #seafdav_config.generate()
+    #gunicorn_config.generate()
+    #seahub_config.generate()
+    #if env_mgr.is_pro:
+    #    pro_config.generate()
+    #    pro_config.do_syncdb()
+
+    # Create required directories
+    os.mkdir('/opt/seafile/ccnet')
 
     ccnet_config.do_syncdb()
     seafile_config.do_syncdb()
