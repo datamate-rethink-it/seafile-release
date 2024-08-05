@@ -172,6 +172,9 @@ def init_seafile_server():
 #             fp.writelines(fp_lines)
 #     # CUSTOM END
 
+    # TODO
+    # TODO
+
     # After the setup script creates all the files inside the
     # container, we need to move them to the shared volume
     #
@@ -184,6 +187,7 @@ def init_seafile_server():
             call('mv -f ' + str(src) + ' ' + str(dst))
             call('ln -sf ' + str(dst) + ' ' + str(src))
 
+    # Custom directory for favicon/...
     gen_custom_dir()
 
     loginfo('Updating version stamp')

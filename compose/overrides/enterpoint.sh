@@ -66,6 +66,36 @@ ln -sf /shared/nginx/conf/seafile.nginx.conf /etc/nginx/sites-enabled/seafile.ng
 log "Reloading NGINX..."
 nginx -s reload
 
+/scripts/setup-databases.py
+
+log "Creating required directories..."
+mkdir -p /opt/seafile/{ccnet,seafile-data,seahub-data}
+
+log "Creating seafile-server-latest symbolic link..."
+ln -s "/opt/seafile/seafile-pro-server-${SEAFILE_VERSION}" /opt/seafile/seafile-server-latest
+
+# After the setup script creates all the files inside the container, we need to move them to the shared volume
+# e.g move "/opt/seafile/seafile-data" to "/shared/seafile/seafile-data"
+directories=( "conf" "ccnet" "seafile-data" "seahub-data" "pro-data" )
+for directory in "${directories[@]}"; do
+    src="/opt/seafile/${directory}"
+    dst="/shared/seafile/${directory}"
+    if [ ! -d "$dst" ] && [ -d "$src" ]; then
+        mv -fv "$src" "$dst"
+        ln -sfv "$dst" "$src"
+    fi
+done
+
+# Create custom directory favicons etc.
+# TODO: Test this
+dst_custom_dir='/shared/seafile/seahub-data/custom'
+custom_dir='/opt/seafile/seafile-server-latest/seahub/media/custom'
+if [ ! -d "$dst_custom_dir" ]; then
+    mkdir -p "$dst_custom_dir"
+    rm -rf "$custom_dir"
+    ln -sf "$dst_custom_dir" "$custom_dir"
+fi
+
 # start cluster server
 if [[ $CLUSTER_SERVER == "true" && $SEAFILE_SERVER == "seafile-pro-server" ]] ;then
     # TODO: Check this code path

@@ -46,12 +46,15 @@ def main():
     if not exists(generated_dir):
         os.makedirs(generated_dir)
 
-    wait_for_mysql()
-    init_seafile_server()
+    # TODO: Check that I've copied everything over
+    # init_seafile_server()
 
-    check_upgrade()
+    # check_upgrade()
     os.chdir(installdir)
 
+    # seahub requires conf/admin.txt in order to create an admin user
+    # TODO: Create a PR to read from environment variables instead
+    # https://github.com/haiwen/seahub/blob/20cf8b7f5897a89c695bdb01a066a3fbdbfece9c/scripts/check_init_admin.py#L344
     admin_pw = {
         'email': get_conf('SEAFILE_ADMIN_EMAIL', 'me@example.com'),
         'password': get_conf('SEAFILE_ADMIN_PASSWORD', 'asecret'),

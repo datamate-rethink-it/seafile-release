@@ -35,6 +35,8 @@ REQUIRED_VARIABLES = [
     'DB_ROOT_PASSWD',
 ]
 
+# TODO: AVATAR_FILE_STORAGE = 'seahub.base.database_storage.DatabaseStorage'
+
 # Specify default values
 # Note: configparser only allows strings as values
 # Note: Uppercase/lowercase matters here
@@ -240,7 +242,9 @@ CACHES = {
             '\n',
             "COMPRESS_CACHE_BACKEND = 'locmem'\n",
             "TIME_ZONE = '%s'\n" % os.getenv('TIME_ZONE', default='Etc/UTC'),
-            "FILE_SERVER_ROOT = '{proto}://{domain}/seafhttp'".format(proto=get_proto(), domain=SEAFILE_SERVER_HOSTNAME),
+            "FILE_SERVER_ROOT = '{proto}://{domain}/seafhttp'\n".format(proto=get_proto(), domain=SEAFILE_SERVER_HOSTNAME),
+            # TODO
+            "AVATAR_FILE_STORAGE = 'seahub.base.database_storage.DatabaseStorage'"
         ])
 
 def generate_nginx_conf_file(path: str):

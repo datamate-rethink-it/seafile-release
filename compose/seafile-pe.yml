@@ -25,6 +25,7 @@ services:
         read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
       - ./overrides/enterpoint.sh:/scripts/enterpoint.sh:ro
       - ./overrides/generate-config-files.py:/scripts/generate-config-files.py:ro
+      - ./overrides/setup-databases.py:/scripts/setup-databases.py:ro
       - ./overrides/bootstrap.py:/scripts/bootstrap.py:ro
       - ./overrides/start.py:/scripts/start.py:ro
       # Note the mount destination: /scripts/setup-seafile-mysql.py is the CE version of the script ¯\_(ツ)_/¯
