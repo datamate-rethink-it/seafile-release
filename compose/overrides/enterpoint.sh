@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Error on failure
+set -e
 
 # log function
 function log() {
