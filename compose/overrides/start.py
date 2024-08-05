@@ -18,7 +18,7 @@ from utils import (
     render_template, wait_for_mysql, setup_logging
 )
 from upgrade import check_upgrade
-from bootstrap import init_seafile_server, is_https, init_letsencrypt, generate_local_nginx_conf
+from bootstrap import init_seafile_server, generate_local_nginx_conf
 
 
 shared_seafiledir = '/shared/seafile'
@@ -47,8 +47,6 @@ def main():
     if not exists(generated_dir):
         os.makedirs(generated_dir)
 
-    if is_https():
-        init_letsencrypt()
     generate_local_nginx_conf()
     try:
         call('nginx -s reload')

@@ -11,17 +11,13 @@ Bootstraping seafile server, letsencrypt (verification & cron job).
 
 import argparse
 import os
-from os.path import abspath, basename, exists, dirname, join, isdir
-import shutil
-import sys
-import uuid
-import time
+from os.path import exists, dirname, join
 
 from utils import (
     call, get_conf, get_install_dir, loginfo,
-    get_script, render_template, get_seafile_version, eprint,
-    cert_has_valid_days, get_version_stamp_file, update_version_stamp,
-    wait_for_mysql, wait_for_nginx, read_version_stamp
+    get_script, render_template, get_seafile_version,
+    get_version_stamp_file, update_version_stamp,
+    read_version_stamp
 )
 
 seafile_version = get_seafile_version()
@@ -39,59 +35,6 @@ def gen_custom_dir():
         os.mkdir(dst_custom_dir)
         call('rm -rf %s' % custom_dir)
         call('ln -sf %s %s' % (dst_custom_dir, custom_dir))
-
-def init_letsencrypt():
-    loginfo('Preparing for letsencrypt ...')
-    wait_for_nginx()
-
-    if not exists(ssl_dir):
-        os.mkdir(ssl_dir)
-
-    domain = get_conf('SEAFILE_SERVER_HOSTNAME', 'seafile.example.com')
-    context = {
-        'ssl_dir': ssl_dir,
-        'domain': domain,
-    }
-    render_template(
-        '/templates/letsencrypt.cron.template',
-        join(generated_dir, 'letsencrypt.cron'),
-        context
-    )
-
-    ssl_crt = '/shared/ssl/{}.crt'.format(domain)
-    if exists(ssl_crt):
-        loginfo('Found existing cert file {}'.format(ssl_crt))
-        if cert_has_valid_days(ssl_crt, 30):
-            loginfo('Skip letsencrypt verification since we have a valid certificate')
-            # Create a crontab to auto renew the cert for letsencrypt.
-            with open('/var/spool/cron/crontabs/root', 'r') as f:
-                crons = f.read()
-            if '/scripts/ssl.sh' not in crons:
-                call('echo "0 1 * * * /scripts/ssl.sh {0} {1} >> /shared/ssl/letsencrypt.log 2>&1" >> /var/spool/cron/crontabs/root'.format(ssl_dir, domain))
-                call('/usr/bin/crontab /var/spool/cron/crontabs/root')
-            return
-
-    loginfo('Starting letsencrypt verification')
-    # Create a temporary nginx conf to start a server, which would accessed by letsencrypt
-    context = {
-        'https': False,
-        'domain': domain,
-        'is_tmp': True,
-    }
-    if not os.path.isfile('/shared/nginx/conf/seafile.nginx.conf'):
-        render_template('/templates/seafile.nginx.conf.template',
-                        '/etc/nginx/sites-enabled/seafile.nginx.conf', context)
-
-    call('nginx -s reload')
-    time.sleep(2)
-
-    return_code = call('/scripts/ssl.sh {0} {1}'.format(ssl_dir, domain), check_call=False)
-    if return_code not in [0, 2]:
-        raise RuntimeError('Failed to generate ssl certificate for domain {0}'.format(domain))
-
-    call('echo "0 1 * * * /scripts/ssl.sh {0} {1} >> /shared/ssl/letsencrypt.log 2>&1" >> /var/spool/cron/crontabs/root'.format(ssl_dir, domain))
-    call('/usr/bin/crontab /var/spool/cron/crontabs/root')
-    # Create a crontab to auto renew the cert for letsencrypt.
 
 
 def generate_local_nginx_conf():
