@@ -19,11 +19,25 @@ SEAFILE_CONF_PATH = os.path.join(CONFIG_DIR, 'seafile.conf')
 GUNICORN_CONF_PATH = os.path.join(CONFIG_DIR, 'gunicorn.conf.py')
 SEAHUB_SETTINGS_PATH = os.path.join(CONFIG_DIR, 'seahub_settings.py')
 
+REQUIRED_VARIABLES = [
+    'CCNET__Database__HOST',
+    'CCNET__Database__PASSWD',
+    'SEAFEVENTS__DATABASE__host',
+    'SEAFEVENTS__DATABASE__password',
+    'SEAFILE__database__host',
+    'SEAFILE__database__password',
+    'SEAFILE__notification__jwt_private_key',
+    'SEAHUB_SECRET_KEY',
+    'SEAFILE_SERVER_HOSTNAME',
+    # TODO: Should these two environment variable be named differently? Or keep the names for backwards compatibility?
+    'DB_HOST',
+    'DB_ROOT_PASSWD',
+]
+
 # Specify default values
 # Note: configparser only allows strings as values
+# Note: Uppercase/lowercase matters here
 DEFAULT_VALUES = {
-    # TODO: Check if casing matters here (section names/key names)
-    # TODO: Related: https://stackoverflow.com/questions/19359556/configparser-reads-capital-keys-and-make-them-lower-case
     'CCNET__Database__ENGINE': 'mysql',
     # No default value for CCNET__Database__HOST
     'CCNET__Database__PORT': '3306',
@@ -70,15 +84,18 @@ DEFAULT_VALUES = {
     # No default value for SEAFILE__database__password
     'SEAFILE__database__db_name': 'seafile_db',
     'SEAFILE__database__connection_charset': 'utf8',
+    # TODO: Set to true (check cdb's commit)
     'SEAFILE__notification__enabled': 'false',
     'SEAFILE__notification__host': '127.0.0.1',
     'SEAFILE__notification__port': '8083',
     'SEAFILE__notification__log_level': 'info',
-    # No default value for jwt_private_key: should be created outside the container and passed in via ENV
+    # No default value for SEAFILE__notification__jwt_private_key: should be created outside the container and passed in via ENV
 }
 
+# Generates a config file
+# path is the file location
+# prefix is the prefix for environment variables
 def generate_conf_file(path: str, prefix: str):
-    # TODO: Explain parameters
     # Get all matching variables from "DEFAULT_VALUES"
     variables = {key: value for key, value in DEFAULT_VALUES.items() if key.startswith(prefix)}
 
@@ -87,8 +104,6 @@ def generate_conf_file(path: str, prefix: str):
 
     # Update variables, values supplied by the user take precedence
     variables.update(user_variables)
-
-    # TODO: Check that required ENV (e.g. database password) are set, exit with non-zero exit code if not
 
     config = configparser.ConfigParser()
 
@@ -155,20 +170,6 @@ limit_request_line = 8190
         file.write(config.lstrip())
 
 def generate_seahub_settings_file(path: str):
-    required_variables = [
-        'SEAHUB_SECRET_KEY',
-        'SEAFILE_SERVER_HOSTNAME',
-        # TODO: Should these two environment variable be named differently? Or keep the names for backwards compatibility?
-        'DB_HOST',
-        'DB_ROOT_PASSWD',
-    ]
-
-    # Check that required variables are set
-    for variable in required_variables:
-        if os.environ.get(variable) is None:
-            logger.error('Error: Variable "%s" must be provided', variable)
-            sys.exit(1)
-
     SECRET_KEY = os.environ['SEAHUB_SECRET_KEY']
     SEAFILE_SERVER_HOSTNAME = os.environ['SEAFILE_SERVER_HOSTNAME']
     DB_PASSWORD = os.environ['DB_ROOT_PASSWD']
@@ -244,6 +245,12 @@ CACHES = {
 if __name__ == '__main__':
     if not os.path.exists(CONFIG_DIR):
         os.makedirs(CONFIG_DIR)
+
+    # Check that required environment variables are set
+    for variable in REQUIRED_VARIABLES:
+        if os.environ.get(variable) is None:
+            logger.error('Error: Variable "%s" must be provided', variable)
+            sys.exit(1)
 
     generate_conf_file(path=CCNET_CONF_PATH, prefix='CCNET__')
     generate_conf_file(path=SEAFDAV_CONF_PATH, prefix='SEAFDAV__')
