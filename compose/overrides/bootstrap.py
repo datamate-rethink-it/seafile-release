@@ -15,7 +15,7 @@ from os.path import exists, dirname, join
 
 from utils import (
     call, get_conf, get_install_dir, loginfo,
-    get_script, render_template, get_seafile_version,
+    get_script, get_seafile_version,
     get_version_stamp_file, update_version_stamp,
     read_version_stamp
 )
@@ -35,26 +35,6 @@ def gen_custom_dir():
         os.mkdir(dst_custom_dir)
         call('rm -rf %s' % custom_dir)
         call('ln -sf %s %s' % (dst_custom_dir, custom_dir))
-
-
-def generate_local_nginx_conf():
-    # Now create the final nginx configuratin
-    domain = get_conf('SEAFILE_SERVER_HOSTNAME', 'seafile.example.com')
-    context = {
-        'https': is_https(),
-        'domain': domain,
-        'is_tmp': False,
-    }
-
-    if not os.path.isfile('/shared/nginx/conf/seafile.nginx.conf'):
-        render_template(
-            '/templates/seafile.nginx.conf.template',
-            '/etc/nginx/sites-enabled/seafile.nginx.conf',
-            context
-        )
-        nginx_etc_file = '/etc/nginx/sites-enabled/seafile.nginx.conf'
-        nginx_shared_file = '/shared/nginx/conf/seafile.nginx.conf'
-        call('mv {0} {1} && ln -sf {1} {0}'.format(nginx_etc_file, nginx_shared_file))
 
 def is_https():
     return get_conf('SEAFILE_SERVER_LETSENCRYPT', 'false').lower() == 'true'

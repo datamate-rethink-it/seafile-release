@@ -8,17 +8,16 @@ the entrypoint command of the docker container.
 
 import json
 import os
-from os.path import abspath, basename, exists, dirname, join, isdir
-import shutil
+from os.path import exists, dirname, join
 import sys
 import time
 
 from utils import (
     call, get_conf, get_install_dir, get_script, get_command_output,
-    render_template, wait_for_mysql, setup_logging
+    wait_for_mysql, setup_logging
 )
 from upgrade import check_upgrade
-from bootstrap import init_seafile_server, generate_local_nginx_conf
+from bootstrap import init_seafile_server
 
 
 shared_seafiledir = '/shared/seafile'
@@ -46,12 +45,6 @@ def main():
         os.mkdir(shared_seafiledir)
     if not exists(generated_dir):
         os.makedirs(generated_dir)
-
-    generate_local_nginx_conf()
-    try:
-        call('nginx -s reload')
-    except Exception as e:
-        print(e)
 
     wait_for_mysql()
     init_seafile_server()

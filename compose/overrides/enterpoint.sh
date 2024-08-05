@@ -57,8 +57,14 @@ cat /scripts/logrotate-conf/logrotate-cron >> /var/spool/cron/crontabs/root
 
 # TODO: Move/Link avatar dir (refer to setup-seafile-mysql.py::prepare_avatar_dir())
 
-# Create configuration files based on environment variables
+log "Generating configuration files based on environment variables..."
 /scripts/generate-config-files.py
+
+# Link seafile.nginx.conf into /etc/nginx/sites-enabled/
+ln -sf /shared/nginx/conf/seafile.nginx.conf /etc/nginx/sites-enabled/seafile.nginx.conf
+
+log "Reloading NGINX..."
+nginx -s reload
 
 # start cluster server
 if [[ $CLUSTER_SERVER == "true" && $SEAFILE_SERVER == "seafile-pro-server" ]] ;then
