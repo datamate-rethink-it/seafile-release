@@ -1574,9 +1574,12 @@ def main():
     #seafdav_config.generate()
     #gunicorn_config.generate()
     #seahub_config.generate()
-    #if env_mgr.is_pro:
-    #    pro_config.generate()
-    #    pro_config.do_syncdb()
+    if env_mgr.is_pro:
+        # Skip generating config file
+        #pro_config.generate()
+
+        # But migrate database
+        pro_config.do_syncdb()
 
     # Create required directories
     os.mkdir('/opt/seafile/ccnet')
