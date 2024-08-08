@@ -46,10 +46,7 @@ def main():
     if not exists(generated_dir):
         os.makedirs(generated_dir)
 
-    # TODO: Check that I've copied everything over
-    # init_seafile_server()
-
-    # check_upgrade()
+    check_upgrade()
     os.chdir(installdir)
 
     # seahub requires conf/admin.txt in order to create an admin user
