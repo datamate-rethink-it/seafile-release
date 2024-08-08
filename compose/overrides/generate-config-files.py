@@ -11,6 +11,8 @@ logger = logging.getLogger('generate-config-files')
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
+# TODO: Allow using a different database user (other than "root")
+
 CONFIG_DIR = '/opt/seafile/conf'
 CCNET_CONF_PATH = os.path.join(CONFIG_DIR, 'ccnet.conf')
 SEAFDAV_CONF_PATH = os.path.join(CONFIG_DIR, 'seafdav.conf')
@@ -28,14 +30,11 @@ REQUIRED_VARIABLES = [
     'SEAFILE__database__host',
     'SEAFILE__database__password',
     'SEAFILE__notification__jwt_private_key',
-    'SEAHUB_SECRET_KEY',
+    'SEAHUB__SECRET_KEY',
     'SEAFILE_SERVER_HOSTNAME',
-    # TODO: Should these two environment variable be named differently? Or keep the names for backwards compatibility?
     'DB_HOST',
     'DB_ROOT_PASSWD',
 ]
-
-# TODO: AVATAR_FILE_STORAGE = 'seahub.base.database_storage.DatabaseStorage'
 
 # Specify default values
 # Note: configparser only allows strings as values
@@ -44,7 +43,6 @@ DEFAULT_VALUES = {
     'CCNET__Database__ENGINE': 'mysql',
     # No default value for CCNET__Database__HOST
     'CCNET__Database__PORT': '3306',
-    # TODO: Use root or create database user before running this script?
     'CCNET__Database__USER': 'root',
     # No default value for CCNET__Database__PASSWD
     'CCNET__Database__DB': 'ccnet_db',
@@ -57,7 +55,6 @@ DEFAULT_VALUES = {
     'SEAFEVENTS__DATABASE__type': 'mysql',
     # No default value for SEAFEVENTS__DATABASE__host
     'SEAFEVENTS__DATABASE__port': '3306',
-    # TODO: Use root or create database user before running this script?
     'SEAFEVENTS__DATABASE__username': 'root',
     # No default value for SEAFEVENTS__DATABASE__password
     'SEAFEVENTS__DATABASE__name': 'seahub_db',
@@ -82,7 +79,6 @@ DEFAULT_VALUES = {
     'SEAFILE__database__type': 'mysql',
     # No default value for SEAFILE__database__host
     'SEAFILE__database__port': '3306',
-    # TODO: Use root or create database user before running this script?
     'SEAFILE__database__user': 'root',
     # No default value for SEAFILE__database__password
     'SEAFILE__database__db_name': 'seafile_db',
@@ -93,6 +89,12 @@ DEFAULT_VALUES = {
     'SEAFILE__notification__port': '8083',
     'SEAFILE__notification__log_level': 'info',
     # No default value for SEAFILE__notification__jwt_private_key: should be created outside the container and passed in via ENV
+
+    'SEAHUB__SERVICE_URL': f'{get_proto()}://{os.environ.get("SEAFILE_SERVER_HOSTNAME")}',
+    'SEAHUB__FILE_SERVER_ROOT': f'{get_proto()}://{os.environ.get("SEAFILE_SERVER_HOSTNAME")}/seafhttp',
+    'SEAHUB__TIME_ZONE': os.environ.get('TIME_ZONE', 'Etc/UTC'),
+    'SEAHUB__COMPRESS_CACHE_BACKEND': 'locmem',
+    'SEAHUB__AVATAR_FILE_STORAGE': 'seahub.base.database_storage.DatabaseStorage',
 }
 
 # Generates a config file
@@ -141,8 +143,6 @@ def generate_conf_file(path: str, prefix: str):
         config.write(file)
 
 def generate_gunicorn_config_file(path: str):
-    # TODO: Can pids_dir be hardcoded? It was dynamic in setup-seafile-mysql.py
-
     # Source: https://github.com/haiwen/seafile-docker/blob/da9bf740e4a093a0c25c4ae9a09e08069194fc73/scripts/scripts_11.0/setup-seafile-mysql.py#L1213
     config = """
 import os
@@ -173,11 +173,6 @@ limit_request_line = 8190
         file.write(config.lstrip())
 
 def generate_seahub_settings_file(path: str):
-    SECRET_KEY = os.environ['SEAHUB_SECRET_KEY']
-    SEAFILE_SERVER_HOSTNAME = os.environ['SEAFILE_SERVER_HOSTNAME']
-    DB_PASSWORD = os.environ['DB_ROOT_PASSWD']
-    DB_HOST= os.environ['DB_HOST']
-
     database_config_template = """
 DATABASES = {
     'default': {
@@ -193,13 +188,10 @@ DATABASES = {
 """
 
     database_config = {
-        # TODO: Which values should be configurable through environment variables?
         'name': 'seahub_db',
-        # TODO: Use root or create database user before running this script?
         'username': 'root',
-        # Use [] to throw if variable is not set
-        'password': DB_PASSWORD,
-        'host': DB_HOST,
+        'password': os.environ['DB_ROOT_PASSWD'],
+        'host': os.environ['DB_HOST'],
         'port': '3306',
     }
 
@@ -215,14 +207,78 @@ CACHES = {
 }
 """
 
+    # Should use memcached as default cache backend
+    cache_backend = os.environ.get('SEAHUB__CACHE_BACKEND', 'memcached')
+    if cache_backend == 'memcached':
+        django_cache_backend = 'django_pylibmc.memcached.PyLibMCCache'
+    elif cache_backend == 'redis':
+        # TODO: The redis python package is missing from the container image, therefore the redis cache backend does not work!
+        django_cache_backend = 'django.core.cache.backends.redis.RedisCache'
+    else:
+        logger.error('Error: Invalid value for variable "SEAHUB_CACHE_BACKEND": "%s" (must be "memcached" or "redis")', cache_backend)
+        sys.exit(1)
+
     cache_config = {
-        # Should use memcached by default
-        # TODO: Allow usage of Redis instead of memcached based on environment variables
-        # TODO: Host + port should be configurable through environment variables
-        'backend': 'django_pylibmc.memcached.PyLibMCCache',
-        'host': 'memcached',
-        'port': '11211'
+        'backend': django_cache_backend,
+        'host': os.environ.get('SEAHUB__CACHE_HOST', 'memcached'),
+        'port': os.environ.get('SEAHUB__CACHE_PORT', '11211'),
     }
+
+    # Generate lines for all the other settings
+    lines = []
+
+    # Prefix for environment variables
+    prefix = 'SEAHUB__'
+
+    # Get all matching variables from "DEFAULT_VALUES"
+    variables = {key: value for key, value in DEFAULT_VALUES.items() if key.startswith(prefix)}
+
+    # Get matching environment variables
+    user_variables = {key: value for key, value in os.environ.items() if key.startswith(prefix)}
+
+    # Update variables, values supplied by the user take precedence
+    variables.update(user_variables)
+
+    # These variables are handled separately and should not cause auto-generated variable definitions
+    excluded_variables = [
+        'SEAHUB__CACHE_BACKEND',
+        'SEAHUB__CACHE_HOST',
+        'SEAHUB__CACHE_PORT',
+        # Exclude variables that are lists (for now)
+        'SEAHUB__CSRF_TRUSTED_ORIGINS',
+        'SEAHUB__ALLOWED_HOSTS',
+        'SEAHUB__VIRUS_SCAN_NOTIFY_LIST',
+        'SEAHUB__REST_FRAMEWORK_THROTTING_WHITELIST',
+    ]
+
+    for key, value in variables.items():
+        if key in excluded_variables:
+            continue
+
+        # Ignore variables for SAML attribute mapping configuration
+        if key.startswith('SEAHUB__SAML_ATTRIBUTE_MAPPING__'):
+            continue
+
+        parts = key.split('__')
+
+        if len(parts) != 2:
+            logger.error('Error: Variable "%s" does not match PREFIX__KEY format', key)
+            sys.exit(1)
+
+        key = parts[1]
+
+        # TODO: Check if key exists in seahub/settings.py to prevent errors due to typos
+
+        # Determine variable type
+        if value.lower() in ['true', 'false']:
+            # Boolean
+            lines.append(f'{key} = {value.lower() == "true"}')
+        elif value.isdigit():
+            # Number
+            lines.append(f'{key} = {value}')
+        else:
+            # String
+            lines.append(f'{key} = "{value}"')
 
     if not os.path.exists(path):
         logger.info(f'Generating {os.path.basename(path)} since it does not exist yet')
@@ -230,22 +286,30 @@ CACHES = {
         logger.info(f'Updating {os.path.basename(path)}')
 
     with open(path, 'w') as file:
-        file.writelines([
-            "SECRET_KEY = '%s'" % SECRET_KEY, '\n',
-            "SERVICE_URL = 'http://%s'" % SEAFILE_SERVER_HOSTNAME, '\n'
-        ])
-
-        file.write(database_config_template % database_config)
+        file.write(database_config_template.lstrip() % database_config)
         file.write(cache_config_template % cache_config)
+        file.write('\n')
 
-        file.writelines([
-            '\n',
-            "COMPRESS_CACHE_BACKEND = 'locmem'\n",
-            "TIME_ZONE = '%s'\n" % os.getenv('TIME_ZONE', default='Etc/UTC'),
-            "FILE_SERVER_ROOT = '{proto}://{domain}/seafhttp'\n".format(proto=get_proto(), domain=SEAFILE_SERVER_HOSTNAME),
-            # TODO
-            "AVATAR_FILE_STORAGE = 'seahub.base.database_storage.DatabaseStorage'"
-        ])
+        file.write(f'CSRF_TRUSTED_ORIGINS = ["{get_proto()}://{os.environ.get("SEAFILE_SERVER_HOSTNAME")}"]\n')
+
+        saml_attribute_mapping = generate_saml_attribute_mapping()
+        if len(saml_attribute_mapping) > 0:
+            file.write(f'SAML_ATTRIBUTE_MAPPING = {repr(saml_attribute_mapping)}\n')
+
+        for line in lines:
+            file.write(line)
+            file.write('\n')
+
+def generate_saml_attribute_mapping() -> dict[str, tuple[str]]:
+    saml_attribute_mapping = {}
+
+    variables = {key: value for key, value in os.environ.items() if key.startswith('SEAHUB__SAML_ATTRIBUTE_MAPPING__')}
+
+    for key, value in variables.items():
+        key = key.removeprefix('SEAHUB__SAML_ATTRIBUTE_MAPPING__')
+        saml_attribute_mapping[key] = (value,)
+
+    return saml_attribute_mapping
 
 def generate_nginx_conf_file(path: str):
     config_template = """
