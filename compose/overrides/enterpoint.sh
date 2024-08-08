@@ -70,7 +70,8 @@ nginx -s reload
 /scripts/setup-databases.py
 
 log "Creating required directories..."
-mkdir -p /opt/seafile/{ccnet,seafile-data,seahub-data}
+mkdir -p /opt/seafile/{ccnet,seafile-data,seahub-data/avatars}
+
 
 log "Setting file permissions..."
 # Taken from setup-seafile-mysql.py::set_file_perm()

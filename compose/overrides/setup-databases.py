@@ -72,6 +72,21 @@ def check_if_table_exists(connection: pymysql.Connection, table_name: str) -> bo
 
     return result == 1
 
+def create_avatars_table(connection: pymysql.Connection):
+    cursor = connection.cursor()
+
+    # Docs: https://manual.seafile.com/deploy_pro/deploy_in_a_cluster/#update-seahub-database
+    # Note: The "IF NOT EXISTS" was added manually
+    sql = 'CREATE TABLE IF NOT EXISTS `avatar_uploaded` (`filename` TEXT NOT NULL, `filename_md5` CHAR(32) NOT NULL PRIMARY KEY, `data` MEDIUMTEXT NOT NULL, `size` INTEGER NOT NULL, `mtime` datetime NOT NULL);'
+
+    try:
+        cursor.execute(sql)
+    except Exception as e:
+        logger.error('Could not create "avatar_uploaded" table: %s', e)
+        sys.exit(1)
+    finally:
+        cursor.close()
+
 if __name__ == '__main__':
     wait_for_mysql()
     logger.info('MariaDB is ready')
@@ -111,5 +126,7 @@ if __name__ == '__main__':
         logger.info('seahub/sql/mysql.sql is not being imported since the database contains existing tables')
     else:
         import_sql_file(connection, SEAHUB_SQL_PATH)
+
+    create_avatars_table(connection)
 
     connection.close()
