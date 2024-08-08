@@ -93,8 +93,12 @@ for directory in "${directories[@]}"; do
     fi
 done
 
-log "Updating /shared/seafile/seafile-data/current_version..."
-echo "${SEAFILE_VERSION}" > /shared/seafile/seafile-data/current_version
+if [ ! -f /shared/seafile/seafile-data/current_version ]; then
+    log "Creating /shared/seafile/seafile-data/current_version..."
+    echo "${SEAFILE_VERSION}" > /shared/seafile/seafile-data/current_version
+else
+    log "/shared/seafile/seafile-data/current_version already exists"
+fi
 
 # Create directory for custom site logo/favicon/...
 dst_custom_dir='/shared/seafile/seahub-data/custom'
