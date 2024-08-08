@@ -26,10 +26,7 @@ services:
       - ./overrides/enterpoint.sh:/scripts/enterpoint.sh:ro
       - ./overrides/generate-config-files.py:/scripts/generate-config-files.py:ro
       - ./overrides/setup-databases.py:/scripts/setup-databases.py:ro
-      - ./overrides/bootstrap.py:/scripts/bootstrap.py:ro
       - ./overrides/start.py:/scripts/start.py:ro
-      # Note the mount destination: /scripts/setup-seafile-mysql.py is the CE version of the script ¯\_(ツ)_/¯
-      - ./overrides/setup-seafile-mysql.py:/opt/seafile/seafile-pro-server-11.0.11/setup-seafile-mysql.py:ro
     depends_on:
       - mariadb
       - memcached
