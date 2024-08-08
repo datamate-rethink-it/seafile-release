@@ -36,6 +36,8 @@ Generate Secrets
 ```bash
 sed -i "s/^SEAFILE_ADMIN_PASSWORD=.*/SEAFILE_ADMIN_PASSWORD=$(pwgen 40 1)/" .env
 sed -i "s/^SEAFILE_MYSQL_ROOT_PASSWORD=.*/SEAFILE_MYSQL_ROOT_PASSWORD=$(pwgen 40 1)/" .env
+sed -i "s/^SEAHUB__SECRET_KEY=.*/SEAHUB__SECRET_KEY=$(pwgen 40 1)/" .env
+sed -i "s/^SEAFILE__notification__jwt_private_key=.*/SEAFILE__notification__jwt_private_key=$(pwgen 40 1)/" .env
 ```
 
 Complete `.env` and copy `seafile-license.txt` to the `/opt/seafile-compose` folder. A license is only required for more than 3 users but then the license mount must be removed from seafile-pe.yml file.
