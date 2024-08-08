@@ -23,12 +23,6 @@ SEAHUB_SETTINGS_PATH = os.path.join(CONFIG_DIR, 'seahub_settings.py')
 NGINX_CONF_PATH = '/shared/nginx/conf/seafile.nginx.conf'
 
 REQUIRED_VARIABLES = [
-    'CCNET__Database__HOST',
-    'CCNET__Database__PASSWD',
-    'SEAFEVENTS__DATABASE__host',
-    'SEAFEVENTS__DATABASE__password',
-    'SEAFILE__database__host',
-    'SEAFILE__database__password',
     'SEAFILE__notification__jwt_private_key',
     'SEAHUB__SECRET_KEY',
     'SEAFILE_SERVER_HOSTNAME',
@@ -41,10 +35,10 @@ REQUIRED_VARIABLES = [
 # Note: Uppercase/lowercase matters here
 DEFAULT_VALUES = {
     'CCNET__Database__ENGINE': 'mysql',
-    # No default value for CCNET__Database__HOST
+    'CCNET__Database__HOST': os.environ.get('DB_HOST'),
     'CCNET__Database__PORT': '3306',
     'CCNET__Database__USER': 'root',
-    # No default value for CCNET__Database__PASSWD
+    'CCNET__Database__PASSWD': os.environ.get('DB_ROOT_PASSWD'),
     'CCNET__Database__DB': 'ccnet_db',
     'CCNET__Database__CONNECTION_CHARSET': 'utf8',
 
@@ -53,10 +47,10 @@ DEFAULT_VALUES = {
     'SEAFDAV__WEBDAV__share_name': '/seafdav',
 
     'SEAFEVENTS__DATABASE__type': 'mysql',
-    # No default value for SEAFEVENTS__DATABASE__host
+    'SEAFEVENTS__DATABASE__host': os.environ.get('DB_HOST'),
     'SEAFEVENTS__DATABASE__port': '3306',
     'SEAFEVENTS__DATABASE__username': 'root',
-    # No default value for SEAFEVENTS__DATABASE__password
+    'SEAFEVENTS__DATABASE__password': os.environ.get('DB_ROOT_PASSWD'),
     'SEAFEVENTS__DATABASE__name': 'seahub_db',
 
     # Spaces in section names are encoded with '0x20' (HEX representation of a space character)
@@ -77,10 +71,10 @@ DEFAULT_VALUES = {
 
     'SEAFILE__fileserver__port': '8082',
     'SEAFILE__database__type': 'mysql',
-    # No default value for SEAFILE__database__host
+    'SEAFILE__database__host': os.environ.get('DB_HOST'),
     'SEAFILE__database__port': '3306',
     'SEAFILE__database__user': 'root',
-    # No default value for SEAFILE__database__password
+    'SEAFILE__database__password': os.environ.get('DB_ROOT_PASSWD'),
     'SEAFILE__database__db_name': 'seafile_db',
     'SEAFILE__database__connection_charset': 'utf8',
     'SEAFILE__notification__enabled': 'true',
