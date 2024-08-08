@@ -76,21 +76,6 @@ if __name__ == '__main__':
     wait_for_mysql()
     logger.info('MariaDB is ready')
 
-    # TODO
-    """
-    version_stamp_file = get_version_stamp_file()
-    if exists(join(shared_seafiledir, 'seafile-data')):
-        if not exists(version_stamp_file):
-            update_version_stamp(os.environ['SEAFILE_VERSION'])
-        # sysbol link unlink after docker finish.
-        latest_version_dir='/opt/seafile/seafile-server-latest'
-        current_version_dir='/opt/seafile/' + get_conf('SEAFILE_SERVER', 'seafile-server') + '-' +  read_version_stamp()
-        if not exists(latest_version_dir):
-            call('ln -sf ' + current_version_dir + ' ' + latest_version_dir)
-        loginfo('Skip running setup-seafile-mysql.py because there is existing seafile-data folder.')
-        return
-    """
-
     host = os.environ['DB_HOST']
     # TODO: Allow port to be customized?
     port = 3306
@@ -128,32 +113,3 @@ if __name__ == '__main__':
         import_sql_file(connection, SEAHUB_SQL_PATH)
 
     connection.close()
-
-    # TODO: Move to other script
-    topdir = os.path.dirname(INSTALL_DIR)
-    from os.path import exists
-    from utils import call
-    shared_seafiledir = '/shared/seafile'
-    # After the setup script creates all the files inside the
-    # container, we need to move them to the shared volume
-    #
-    # e.g move "/opt/seafile/seafile-data" to "/shared/seafile/seafile-data"
-    files_to_copy = ['conf', 'ccnet', 'seafile-data', 'seahub-data', 'pro-data']
-    for fn in files_to_copy:
-        src = join(topdir, fn)
-        dst = join(shared_seafiledir, fn)
-        if not exists(dst) and exists(src):
-            call('mv -f ' + str(src) + ' ' + str(dst))
-            call('ln -sf ' + str(dst) + ' ' + str(src))
-
-    # Custom directory for favicon/...
-    #gen_custom_dir()
-
-    #loginfo('Updating version stamp')
-    #update_version_stamp(os.environ['SEAFILE_VERSION'])
-
-    # non root 
-    #non_root = os.getenv('NON_ROOT', default='') == 'true'
-    #if non_root:
-    #    call('chmod -R a+rwx /shared/seafile/')
-

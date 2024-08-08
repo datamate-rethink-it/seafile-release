@@ -55,8 +55,6 @@ fi
 cat /scripts/logrotate-conf/logrotate-cron >> /var/spool/cron/crontabs/root
 /usr/bin/crontab /var/spool/cron/crontabs/root
 
-# TODO: Move/Link avatar dir (refer to setup-seafile-mysql.py::prepare_avatar_dir())
-
 log "Generating configuration files based on environment variables..."
 /scripts/generate-config-files.py
 
@@ -88,6 +86,9 @@ for directory in "${directories[@]}"; do
         ln -sf "$dst" "$src"
     fi
 done
+
+log "Updating /shared/seafile/seafile-data/current_version..."
+echo "${SEAFILE_VERSION}" > /shared/seafile/seafile-data/current_version
 
 # Create directory for custom site logo/favicon/...
 dst_custom_dir='/shared/seafile/seahub-data/custom'
