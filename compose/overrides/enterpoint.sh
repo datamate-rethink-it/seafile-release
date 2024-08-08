@@ -72,7 +72,7 @@ log "Creating required directories..."
 mkdir -p /opt/seafile/{ccnet,seafile-data,seahub-data}
 
 log "Creating seafile-server-latest symbolic link..."
-ln -s "/opt/seafile/seafile-pro-server-${SEAFILE_VERSION}" /opt/seafile/seafile-server-latest
+ln -sf "/opt/seafile/seafile-pro-server-${SEAFILE_VERSION}" /opt/seafile/seafile-server-latest
 
 # After the setup script creates all the files inside the container, we need to move them to the shared volume
 # e.g move "/opt/seafile/seafile-data" to "/shared/seafile/seafile-data"
