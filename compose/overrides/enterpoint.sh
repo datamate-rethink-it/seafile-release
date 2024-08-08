@@ -72,6 +72,11 @@ nginx -s reload
 log "Creating required directories..."
 mkdir -p /opt/seafile/{ccnet,seafile-data,seahub-data}
 
+log "Setting file permissions..."
+# Taken from setup-seafile-mysql.py::set_file_perm()
+chmod 600 /opt/seafile/conf/seahub_settings.py
+chmod 700 /opt/seafile/{ccnet,conf,seafile-data}
+
 log "Creating seafile-server-latest symbolic link..."
 ln -sf "/opt/seafile/seafile-pro-server-${SEAFILE_VERSION}" /opt/seafile/seafile-server-latest
 
