@@ -60,6 +60,9 @@ cat /scripts/logrotate-conf/logrotate-cron >> /var/spool/cron/crontabs/root
 log "Generating configuration files based on environment variables..."
 /scripts/generate-config-files.py
 
+log "Checking seahub_settings.py for syntax errors..."
+python3 -m py_compile /opt/seafile/conf/seahub_settings.py
+
 # Link seafile.nginx.conf into /etc/nginx/sites-enabled/
 ln -sf /shared/nginx/conf/seafile.nginx.conf /etc/nginx/sites-enabled/seafile.nginx.conf
 
