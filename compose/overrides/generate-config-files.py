@@ -83,8 +83,7 @@ DEFAULT_VALUES = {
     # No default value for SEAFILE__database__password
     'SEAFILE__database__db_name': 'seafile_db',
     'SEAFILE__database__connection_charset': 'utf8',
-    # TODO: Set to true (check cdb's commit)
-    'SEAFILE__notification__enabled': 'false',
+    'SEAFILE__notification__enabled': 'true',
     'SEAFILE__notification__host': '127.0.0.1',
     'SEAFILE__notification__port': '8083',
     'SEAFILE__notification__log_level': 'info',
