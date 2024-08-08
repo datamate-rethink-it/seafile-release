@@ -47,6 +47,7 @@ def main():
         os.makedirs(generated_dir)
 
     print('Checking for upgrades...', flush=True)
+    # TODO: Future: Only do database upgrades since the config files should be immutable
     check_upgrade()
 
     os.chdir(installdir)
