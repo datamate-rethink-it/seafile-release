@@ -70,7 +70,7 @@ nginx -s reload
 /scripts/setup-databases.py
 
 log "Creating required directories..."
-mkdir -p /opt/seafile/{ccnet,seafile-data,seahub-data/avatars}
+mkdir -p /opt/seafile/{ccnet,seafile-data/library-template,seahub-data/avatars}
 
 
 log "Setting file permissions..."
