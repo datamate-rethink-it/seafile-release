@@ -84,13 +84,12 @@ for directory in "${directories[@]}"; do
     src="/opt/seafile/${directory}"
     dst="/shared/seafile/${directory}"
     if [ ! -d "$dst" ] && [ -d "$src" ]; then
-        mv -fv "$src" "$dst"
-        ln -sfv "$dst" "$src"
+        mv -f "$src" "$dst"
+        ln -sf "$dst" "$src"
     fi
 done
 
-# Create custom directory favicons etc.
-# TODO: Test this
+# Create directory for custom site logo/favicon/...
 dst_custom_dir='/shared/seafile/seahub-data/custom'
 custom_dir='/opt/seafile/seafile-server-latest/seahub/media/custom'
 if [ ! -d "$dst_custom_dir" ]; then
