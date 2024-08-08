@@ -58,6 +58,20 @@ def import_sql_file(connection: pymysql.Connection, file: str):
 
     logger.info('Successfully imported "%s"', os.path.basename(file))
 
+def check_if_table_exists(connection: pymysql.Connection, table_name: str) -> bool:
+    cursor = connection.cursor()
+    sql = 'SELECT * FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = %s LIMIT 1'
+
+    try:
+        result = cursor.execute(sql, (table_name,))
+    except Exception as e:
+        logger.error('Could not determine if table "%s" already exists: %s', table_name, e)
+        sys.exit(1)
+    finally:
+        cursor.close()
+
+    return result == 1
+
 if __name__ == '__main__':
     wait_for_mysql()
     logger.info('MariaDB is ready')
@@ -104,7 +118,14 @@ if __name__ == '__main__':
 
     connection.select_db(SEAHUB_DB_NAME)
     import_sql_file(connection, SEAFEVENTS_SQL_PATH)
-    import_sql_file(connection, SEAHUB_SQL_PATH)
+
+    # The "CREATE TABLE" statements inside the seahub .sql file do not contain the
+    # "IF NOT EXISTS" statement, so we need to check if a table from the file has
+    # already been created before importing the file
+    if check_if_table_exists(connection, table_name='abuse_reports_abusereport'):
+        logger.info('seahub/sql/mysql.sql is not being imported since the database contains existing tables')
+    else:
+        import_sql_file(connection, SEAHUB_SQL_PATH)
 
     connection.close()
 
