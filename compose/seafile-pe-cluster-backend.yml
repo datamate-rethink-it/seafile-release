@@ -5,8 +5,7 @@ services:
     restart: unless-stopped
     container_name: seafile-server
     environment:
-      # DB_HOST muss variable sein!
-      - DB_HOST=${DB_HOST:?mariadb}
+      - DB_HOST=mariadb
       - DB_ROOT_PASSWD=${SEAFILE_MYSQL_ROOT_PASSWORD:?Variable is not set or empty}
       - TIME_ZONE=${TIME_ZONE}
       - SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL:?Variable is not set or empty}
@@ -15,28 +14,26 @@ services:
       - SEAFILE_SERVER_LETSENCRYPT=false
       - SEAFILE__notification__jwt_private_key=${SEAFILE__notification__jwt_private_key:?Variable is not set or empty}
       - SEAHUB__SECRET_KEY=${SEAHUB__SECRET_KEY:?Variable is not set or empty}
+      - SEAFILE__storage__enable_storage_classes=true
+      - SEAFILE__storage__storage_classes_file=/opt/seafile/seafile_storage_classes.json
+      - SEAFILE__cluster__enabled=true
+      - SEAFILE__memcached__memcached_options=--SERVER=memcached --POOL-MIN=10 --POOL-MAX=100
       - FORCE_HTTPS_IN_CONF=true
       - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
       # CLUSTER ergänzungen
       - CLUSTER_SERVER=true
       - CLUSTER_MODE=${SEAFILE_CLUSTER_NODE_TYPE}
-    extra_hosts:
-      - "${SEAFILE_CLUSTER_0_NAME}:${SEAFILE_CLUSTER_0_IP}"
-    #      - "${SEAFILE_CLUSTER_1_NAME}:${SEAFILE_CLUSTER_1_IP}"
-    #      - "${SEAFILE_CLUSTER_2_NAME}:${SEAFILE_CLUSTER_2_IP}"
-    labels:
-      caddy: ${SEAFILE_SERVER_HOSTNAME}
-      caddy.reverse_proxy: "{{upstreams 80}}"
     volumes:
       - /opt/seafile-server:/shared
       - type: bind
         source: "./seafile-license.txt"
         target: "/shared/seafile/seafile-license.txt"
         read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
-      - /opt/seafile-compose/overrides/enterpoint.sh:/scripts/enterpoint.sh:ro
-      - /opt/seafile-compose/overrides/generate-config-files.py:/scripts/generate-config-files.py:ro
-      - /opt/seafile-compose/overrides/setup-databases.py:/scripts/setup-databases.py:ro
-      - /opt/seafile-compose/overrides/start.py:/scripts/start.py:ro
+      - ./overrides/enterpoint.sh:/scripts/enterpoint.sh:ro
+      - ./overrides/generate-config-files.py:/scripts/generate-config-files.py:ro
+      - ./overrides/setup-databases.py:/scripts/setup-databases.py:ro
+      - ./overrides/start.py:/scripts/start.py:ro
+      - ./seafile_storage_classes.json:/opt/seafile/seafile_storage_classes.json:ro
     depends_on:
       - mariadb
       - memcached
@@ -62,8 +59,8 @@ services:
     #- /opt/seafile-caddy/data/certs:/bitnami/mariadb/certs
     extra_hosts:
       - "${SEAFILE_CLUSTER_0_NAME}:${SEAFILE_CLUSTER_0_IP}"
-    #     - "${SEAFILE_CLUSTER_1_NAME}:${SEAFILE_CLUSTER_1_IP}"
-    #     - "${SEAFILE_CLUSTER_2_NAME}:${SEAFILE_CLUSTER_2_IP}"
+      - "${SEAFILE_CLUSTER_1_NAME}:${SEAFILE_CLUSTER_1_IP}"
+      - "${SEAFILE_CLUSTER_2_NAME}:${SEAFILE_CLUSTER_2_IP}"
     environment:
       - MARIADB_GALERA_CLUSTER_NAME=${MARIADB_GALERA_CLUSTER_NAME}
       - MARIADB_GALERA_FORCE_SAFETOBOOTSTRAP=yes
@@ -87,7 +84,14 @@ services:
       timeout: 5s
       start_period: 15s
       retries: 6
-    network_mode: "host"
+    networks:
+      - backend-seafile-net
+    ports:
+      # TODO: Prefix with private node IP
+      - "3306:3306"
+      - "4444:4444"
+      - "4567:4567"
+      - "4568:4568"
 
   #  mariadb:
   #    image: ${MARIADB_IMAGE:-mariadb:10.11.7-jammy}
