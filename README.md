@@ -25,6 +25,18 @@ wget -c https://github.com/datamate-rethink-it/seafile-release/releases/latest/d
 cp -n .env-release .env
 ```
 
+Create Directories
+
+```bash
+# Elasticsearch
+mkdir -p /opt/seafile-elasticsearch && \
+chown 1000 /opt/seafile-elasticsearch
+
+# Galera (Seafile Cluster only)
+mkdir -p /opt/seafile-galera/mariadb && \
+chown 1001 /opt/seafile-galera/mariadb
+```
+
 Login to Seafile's private repository
 
 ```bash
