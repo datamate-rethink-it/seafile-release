@@ -91,6 +91,11 @@ if __name__ == '__main__':
     wait_for_mysql()
     logger.info('MariaDB is ready')
 
+    if os.environ.get('CLUSTER_SERVER', 'false').lower() == 'true' and os.environ.get('CLUSTER_MODE') == 'frontend':
+        # Database initialization should only run in single-node setups or on the backend node (in case of a cluster setup)
+        logger.info('Not initializing database since this node is configured as a frontend node')
+        sys.exit(0)
+
     host = os.environ['DB_HOST']
     # TODO: Allow port to be customized?
     port = 3306
