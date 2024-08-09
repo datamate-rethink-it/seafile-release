@@ -1,0 +1,99 @@
+---
+services:
+  seafile:
+    image: ${SEAFILE_IMAGE:-docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.11}
+    restart: unless-stopped
+    container_name: seafile-server
+    environment:
+      - DB_HOST=mariadb
+      - DB_ROOT_PASSWD=${SEAFILE_MYSQL_ROOT_PASSWORD:?Variable is not set or empty}
+      - TIME_ZONE=${TIME_ZONE}
+      - SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL:?Variable is not set or empty}
+      - SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD:?Variable is not set or empty}
+      - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME}
+      - SEAFILE_SERVER_LETSENCRYPT=false
+      - SEAFILE__notification__jwt_private_key=${SEAFILE__notification__jwt_private_key:?Variable is not set or empty}
+      - SEAHUB__SECRET_KEY=${SEAHUB__SECRET_KEY:?Variable is not set or empty}
+      - SEAFILE__storage__enable_storage_classes=true
+      - SEAFILE__storage__storage_classes_file=/opt/seafile/seafile_storage_classes.json
+      - SEAFILE__cluster__enabled=true
+      - SEAFILE__memcached__memcached_options=--SERVER=memcached --POOL-MIN=10 --POOL-MAX=100
+      - FORCE_HTTPS_IN_CONF=true
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+      # CLUSTER ergänzungen
+      - CLUSTER_SERVER=true
+      - CLUSTER_MODE=frontend
+    labels:
+      caddy: ${SEAFILE_SERVER_HOSTNAME}
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    volumes:
+      - /opt/seafile-server:/shared
+      - type: bind
+        source: "./seafile-license.txt"
+        target: "/shared/seafile/seafile-license.txt"
+        read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
+      - ./overrides/enterpoint.sh:/scripts/enterpoint.sh:ro
+      - ./overrides/generate-config-files.py:/scripts/generate-config-files.py:ro
+      - ./overrides/setup-databases.py:/scripts/setup-databases.py:ro
+      - ./overrides/start.py:/scripts/start.py:ro
+      - ./seafile_storage_classes.json:/opt/seafile/seafile_storage_classes.json:ro
+    depends_on:
+      - mariadb
+    networks:
+      - frontend-net
+      - backend-seafile-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8000 || exit 1"]
+      interval: 20s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+
+  mariadb:
+    image: ${MARIADB_GALERA_IMAGE:-docker.io/bitnami/mariadb-galera:10.11}
+    container_name: seafile-galera
+    volumes:
+      - /opt/seafile-galera/mariadb:/bitnami/mariadb
+    #      - /opt/seafile-galera/init:/docker-entrypoint-initdb.d
+    #- /opt/seafile-caddy/data/certs:/bitnami/mariadb/certs
+    extra_hosts:
+      - "${SEAFILE_CLUSTER_0_NAME}:${SEAFILE_CLUSTER_0_IP}"
+      - "${SEAFILE_CLUSTER_1_NAME}:${SEAFILE_CLUSTER_1_IP}"
+      - "${SEAFILE_CLUSTER_2_NAME}:${SEAFILE_CLUSTER_2_IP}"
+    environment:
+      - MARIADB_GALERA_CLUSTER_NAME=${MARIADB_GALERA_CLUSTER_NAME}
+      - MARIADB_GALERA_FORCE_SAFETOBOOTSTRAP=yes
+      - MARIADB_GALERA_MARIABACKUP_USER=${MARIADB_GALERA_MARIABACKUP_USER}
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=${MARIADB_GALERA_MARIABACKUP_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_GALERA_CLUSTER_BOOTSTRAP=no # valid values are "yes" and "no"
+      - MARIADB_REPLICATION_PASSWORD=${MARIADB_REPLICATION_PASSWORD}
+      - MARIADB_REPLICATION_USER=${MARIADB_REPLICATION_USER}
+      # maridb_galera / bitnami / additional nodes / diff env
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://${SEAFILE_CLUSTER_0_NAME},${SEAFILE_CLUSTER_1_NAME},${SEAFILE_CLUSTER_2_NAME} # example value "gcomm://mariadb-galera:4567,0.0.0.0:4567"
+      - MARIADB_GALERA_NODE_ADDRESS=${NODE_PRIVATE_HOSTNAME}
+      # TLS
+      - MARIADB_ENABLE_TLS=${MARIADB_ENABLE_TLS}
+    #      - MARIADB_TLS_CERT_FILE=/bitnami/mariadb/certs/${TLS_CERT_FILE}
+    #      - MARIADB_TLS_KEY_FILE=/bitnami/mariadb/certs/${TLS_KEY_FILE}
+    #      - MARIADB_TLS_CA_FILE=/bitnami/mariadb/certs/${TLS_CA_FILE}
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/mariadb-galera/healthcheck.sh"]
+      interval: 15s
+      timeout: 5s
+      start_period: 15s
+      retries: 6
+    networks:
+      - backend-seafile-net
+    ports:
+      # TODO: Prefix with private node IP
+      - "3306:3306"
+      - "4444:4444"
+      - "4567:4567"
+      - "4568:4568"
+
+networks:
+  frontend-net:
+    name: frontend-net
+  backend-seafile-net:
+    name: backend-seafile-net
