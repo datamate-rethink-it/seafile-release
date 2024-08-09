@@ -1,0 +1,23 @@
+---
+services:
+  zabbix-agent:
+    image: ${ZABBIX_AGENT_IMAGE:-zabbix/zabbix-agent:alpine-6.4.10}
+    container_name: zabbix-agent
+    restart: unless-stopped
+    environment:
+      - TZ=${TIME_ZONE}
+      - ZBX_HOSTNAME=${ZBX_HOSTNAME?error}
+      - ZBX_STARTAGENTS=0
+      - ZBX_PASSIVE_ALLOW=false
+      - ZBX_SERVER_HOST=${ZBX_SERVER_HOST:-zabbix.datamate.org}
+      - ZBX_SERVER_PORT=10051
+      - ZBX_TLSCONNECT=psk
+      - ZBX_TLSACCEPT=psk
+      - ZBX_TLSPSKIDENTITY=${ZBX_TLSPSKIDENTITY?error}
+      - ZBX_TLSPSKFILE=/var/lib/zabbix/enc/agent.psk
+      - ZBX_DEBUGLEVEL=3
+    volumes:
+      # mkdir /opt/zabbix && openssl rand -hex 32 > /opt/zabbix/agent.psk
+      - /opt/zabbix/agent.psk:/var/lib/zabbix/enc/agent.psk
+      - /etc/timezone:/etc/timezone:ro
+    privileged: true

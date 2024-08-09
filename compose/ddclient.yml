@@ -1,0 +1,20 @@
+---
+services:
+  ddclient:
+    image: lscr.io/linuxserver/ddclient:latest
+    container_name: ddclient
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - /opt/ddclient:/config
+    restart: unless-stopped
+## /opt/ddclient/ddclient.conf
+#protocol=dyndns2
+#use=web, web=api.ipify.org
+#server=update.spdyn.de
+#ssl=yes
+#login=...
+#password='...'
+#replace-with-spdns-url
