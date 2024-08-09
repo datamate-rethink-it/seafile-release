@@ -1,0 +1,161 @@
+---
+services:
+  seafile:
+    image: ${SEAFILE_IMAGE:-docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.11}
+    restart: unless-stopped
+    container_name: seafile-server
+    environment:
+      # DB_HOST muss variable sein!
+      - DB_HOST=${DB_HOST:?mariadb}
+      - DB_ROOT_PASSWD=${SEAFILE_MYSQL_ROOT_PASSWORD:?Variable is not set or empty}
+      - TIME_ZONE=${TIME_ZONE}
+      - SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL:?Variable is not set or empty}
+      - SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD:?Variable is not set or empty}
+      - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME}
+      - SEAFILE_SERVER_LETSENCRYPT=false
+      - SEAFILE__notification__jwt_private_key=${SEAFILE__notification__jwt_private_key:?Variable is not set or empty}
+      - SEAHUB__SECRET_KEY=${SEAHUB__SECRET_KEY:?Variable is not set or empty}
+      - FORCE_HTTPS_IN_CONF=true
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+      # CLUSTER ergänzungen
+      - CLUSTER_SERVER=true
+      - CLUSTER_MODE=${SEAFILE_CLUSTER_NODE_TYPE}
+    extra_hosts:
+      - "${SEAFILE_CLUSTER_0_NAME}:${SEAFILE_CLUSTER_0_IP}"
+    #      - "${SEAFILE_CLUSTER_1_NAME}:${SEAFILE_CLUSTER_1_IP}"
+    #      - "${SEAFILE_CLUSTER_2_NAME}:${SEAFILE_CLUSTER_2_IP}"
+    labels:
+      caddy: ${SEAFILE_SERVER_HOSTNAME}
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    volumes:
+      - /opt/seafile-server:/shared
+      - type: bind
+        source: "./seafile-license.txt"
+        target: "/shared/seafile/seafile-license.txt"
+        read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
+      - /opt/seafile-compose/overrides/enterpoint.sh:/scripts/enterpoint.sh:ro
+      - /opt/seafile-compose/overrides/generate-config-files.py:/scripts/generate-config-files.py:ro
+      - /opt/seafile-compose/overrides/setup-databases.py:/scripts/setup-databases.py:ro
+      - /opt/seafile-compose/overrides/start.py:/scripts/start.py:ro
+    depends_on:
+      - mariadb
+      - memcached
+      - elasticsearch
+    networks:
+      - frontend-net
+      - backend-seafile-net
+  # muss auf background angepasst werden...
+  #    healthcheck:
+  #      test: ["CMD-SHELL", "curl --fail http://localhost:8000 || exit 1"]
+  #      interval: 20s
+  #      retries: 3
+  #      start_period: 30s
+  #      timeout: 10s
+
+  mariadb:
+    image: ${MARIADB_GALERA_IMAGE:-docker.io/bitnami/mariadb-galera:10.11}
+    container_name: seafile-galera
+    volumes:
+      # chmod 777 wie bei elasticsearch required
+      - /opt/seafile-galera/mariadb:/bitnami/mariadb
+    #      - /opt/seafile-galera/init:/docker-entrypoint-initdb.d
+    #- /opt/seafile-caddy/data/certs:/bitnami/mariadb/certs
+    extra_hosts:
+      - "${SEAFILE_CLUSTER_0_NAME}:${SEAFILE_CLUSTER_0_IP}"
+    #     - "${SEAFILE_CLUSTER_1_NAME}:${SEAFILE_CLUSTER_1_IP}"
+    #     - "${SEAFILE_CLUSTER_2_NAME}:${SEAFILE_CLUSTER_2_IP}"
+    environment:
+      - MARIADB_GALERA_CLUSTER_NAME=${MARIADB_GALERA_CLUSTER_NAME}
+      - MARIADB_GALERA_FORCE_SAFETOBOOTSTRAP=yes
+      - MARIADB_GALERA_MARIABACKUP_USER=${MARIADB_GALERA_MARIABACKUP_USER}
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=${MARIADB_GALERA_MARIABACKUP_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_GALERA_CLUSTER_BOOTSTRAP=${MARIADB_GALERA_CLUSTER_BOOTSTRAP} # valid values are "yes" and "no"
+      - MARIADB_REPLICATION_PASSWORD=${MARIADB_REPLICATION_PASSWORD}
+      - MARIADB_REPLICATION_USER=${MARIADB_REPLICATION_USER}
+      # maridb_galera / bitnami / additional nodes / diff env
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://${SEAFILE_CLUSTER_0_NAME},${SEAFILE_CLUSTER_1_NAME},${SEAFILE_CLUSTER_2_NAME} # example value "gcomm://mariadb-galera:4567,0.0.0.0:4567"
+      - MARIADB_GALERA_NODE_ADDRESS=${NODE_PRIVATE_HOSTNAME}
+      # TLS
+      - MARIADB_ENABLE_TLS=${MARIADB_ENABLE_TLS}
+    #      - MARIADB_TLS_CERT_FILE=/bitnami/mariadb/certs/${TLS_CERT_FILE}
+    #      - MARIADB_TLS_KEY_FILE=/bitnami/mariadb/certs/${TLS_KEY_FILE}
+    #      - MARIADB_TLS_CA_FILE=/bitnami/mariadb/certs/${TLS_CA_FILE}
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/mariadb-galera/healthcheck.sh"]
+      interval: 15s
+      timeout: 5s
+      start_period: 15s
+      retries: 6
+    network_mode: "host"
+
+  #  mariadb:
+  #    image: ${MARIADB_IMAGE:-mariadb:10.11.7-jammy}
+  #    restart: unless-stopped
+  #    container_name: mariadb
+  #    environment:
+  #      - MYSQL_ROOT_PASSWORD=${SEAFILE_MYSQL_ROOT_PASSWORD:?Variable is not set or empty}
+  #      - MYSQL_LOG_CONSOLE=true
+  #      - MARIADB_AUTO_UPGRADE=1
+  #    volumes:
+  #      - /opt/mariadb/db:/var/lib/mysql
+  #    networks:
+  #      - backend-seafile-net
+  #    healthcheck:
+  #      test:
+  #        [
+  #          "CMD",
+  #          "/usr/local/bin/healthcheck.sh",
+  #          "--connect",
+  #          "--mariadbupgrade",
+  #          "--innodb_initialized",
+  #        ]
+  #      interval: 20s
+  #      retries: 3
+  #      start_period: 30s
+  #      timeout: 10s
+
+  memcached:
+    image: ${MEMCACHED_IMAGE:-memcached:1.6.27-bookworm}
+    restart: unless-stopped
+    container_name: seafile-memcached
+    entrypoint: memcached -m 256
+    networks:
+      - backend-seafile-net
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/11211'"]
+      interval: 20s
+      retries: 3
+      timeout: 5s
+
+  elasticsearch:
+    image: ${ELASTICSEARCH_IMAGE:-elasticsearch:8.6.2}
+    restart: unless-stopped
+    container_name: seafile-elasticsearch
+    environment:
+      - "discovery.type=single-node"
+      - "bootstrap.memory_lock=true"
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "xpack.security.enabled=false"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 2g
+    volumes:
+      # requires a chmod 777 /opt/elasticsearch
+      - /opt/seafile-elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      - backend-seafile-net
+    healthcheck:
+      test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+      interval: 60s
+      start_period: 60s
+      timeout: 10s
+      retries: 3
+
+networks:
+  frontend-net:
+    name: frontend-net
+  backend-seafile-net:
+    name: backend-seafile-net
