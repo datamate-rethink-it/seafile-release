@@ -1,0 +1,60 @@
+---
+services:
+  seafile:
+    image: ${SEAFILE_IMAGE:-docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.11}
+    restart: unless-stopped
+    container_name: seafile-server
+    environment:
+      - DB_HOST=${DB_HOST:-mariadb}
+      - DB_ROOT_PASSWD=${MARIADB_ROOT_PASSWORD:?Variable is not set or empty}
+      - TIME_ZONE=${TIME_ZONE}
+      - SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL:?Variable is not set or empty}
+      - SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD:?Variable is not set or empty}
+      - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME}
+      - SEAFILE_SERVER_LETSENCRYPT=false
+      - SEAFILE__notification__jwt_private_key=${SEAFILE__notification__jwt_private_key:?Variable is not set or empty}
+      - SEAHUB__SECRET_KEY=${SEAHUB__SECRET_KEY:?Variable is not set or empty}
+      - SEAHUB__CACHE_HOST=${MEMCACHED_HOST:?Variable is not set or empty}
+      - SEAFILE__storage__enable_storage_classes=true
+      - SEAFILE__storage__storage_classes_file=/opt/seafile/seafile_storage_classes.json
+      - SEAFILE__cluster__enabled=true
+      - SEAFILE__memcached__memcached_options=--SERVER=${MEMCACHED_HOST:?Variable is not set or empty} --POOL-MIN=10 --POOL-MAX=100
+      - FORCE_HTTPS_IN_CONF=true
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+      # CLUSTER ergänzungen
+      - CLUSTER_SERVER=true
+      - CLUSTER_MODE=frontend
+    # TODO: Remove labels since they are only relevant for local development?
+    labels:
+      caddy: ${SEAFILE_SERVER_HOSTNAME}
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    volumes:
+      - /opt/seafile-server:/shared
+      - type: bind
+        source: "./seafile-license.txt"
+        target: "/shared/seafile/seafile-license.txt"
+        read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
+      - ./overrides/enterpoint.sh:/scripts/enterpoint.sh:ro
+      - ./overrides/generate-config-files.py:/scripts/generate-config-files.py:ro
+      - ./overrides/setup-databases.py:/scripts/setup-databases.py:ro
+      - ./overrides/start.py:/scripts/start.py:ro
+      - ./seafile_storage_classes.json:/opt/seafile/seafile_storage_classes.json:ro
+    depends_on:
+      - mariadb
+    networks:
+      - frontend-net
+      - backend-seafile-net
+    ports:
+      - "${NODE_PRIVATE_IP}:80:80"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8000 || exit 1"]
+      interval: 20s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+
+networks:
+  frontend-net:
+    name: frontend-net
+  backend-seafile-net:
+    name: backend-seafile-net
