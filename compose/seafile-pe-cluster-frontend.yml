@@ -45,7 +45,7 @@ services:
       - frontend-net
       - backend-seafile-net
     ports:
-      - "${NODE_PRIVATE_IP:80:80}"
+      - "${NODE_PRIVATE_IP}:80:80"
     healthcheck:
       test: ["CMD-SHELL", "curl --fail http://localhost:8000 || exit 1"]
       interval: 20s
