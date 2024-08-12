@@ -60,6 +60,10 @@ Now it is time for the first start:
 docker compose up -d
 ```
 
+### Configuration
+
+Please refer to [configuration.md](./configuration.md).
+
 ### How to get the latest yml files
 
 ```bash
