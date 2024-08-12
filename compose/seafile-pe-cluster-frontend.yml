@@ -6,7 +6,7 @@ services:
     container_name: seafile-server
     environment:
       - DB_HOST=mariadb
-      - DB_ROOT_PASSWD=${SEAFILE_MYSQL_ROOT_PASSWORD:?Variable is not set or empty}
+      - DB_ROOT_PASSWD=${MARIADB_ROOT_PASSWORD:?Variable is not set or empty}
       - TIME_ZONE=${TIME_ZONE}
       - SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL:?Variable is not set or empty}
       - SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD:?Variable is not set or empty}
@@ -14,15 +14,17 @@ services:
       - SEAFILE_SERVER_LETSENCRYPT=false
       - SEAFILE__notification__jwt_private_key=${SEAFILE__notification__jwt_private_key:?Variable is not set or empty}
       - SEAHUB__SECRET_KEY=${SEAHUB__SECRET_KEY:?Variable is not set or empty}
+      - SEAHUB__CACHE_HOST=${MEMCACHED_HOST:?Variable is not set or empty}
       - SEAFILE__storage__enable_storage_classes=true
       - SEAFILE__storage__storage_classes_file=/opt/seafile/seafile_storage_classes.json
       - SEAFILE__cluster__enabled=true
-      - SEAFILE__memcached__memcached_options=--SERVER=memcached --POOL-MIN=10 --POOL-MAX=100
+      - SEAFILE__memcached__memcached_options=--SERVER=${MEMCACHED_HOST:?Variable is not set or empty} --POOL-MIN=10 --POOL-MAX=100
       - FORCE_HTTPS_IN_CONF=true
       - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
       # CLUSTER ergänzungen
       - CLUSTER_SERVER=true
       - CLUSTER_MODE=frontend
+    # TODO: Remove labels since they are only relevant for local development?
     labels:
       caddy: ${SEAFILE_SERVER_HOSTNAME}
       caddy.reverse_proxy: "{{upstreams 80}}"
@@ -42,6 +44,8 @@ services:
     networks:
       - frontend-net
       - backend-seafile-net
+    ports:
+      - "${NODE_PRIVATE_IP:80:80}"
     healthcheck:
       test: ["CMD-SHELL", "curl --fail http://localhost:8000 || exit 1"]
       interval: 20s
@@ -52,6 +56,7 @@ services:
   mariadb:
     image: ${MARIADB_GALERA_IMAGE:-docker.io/bitnami/mariadb-galera:10.11}
     container_name: seafile-galera
+    hostname: ${NODE_PRIVATE_HOSTNAME:?Variable is not set or empty}
     volumes:
       - /opt/seafile-galera/mariadb:/bitnami/mariadb
     #      - /opt/seafile-galera/init:/docker-entrypoint-initdb.d
@@ -86,11 +91,10 @@ services:
     networks:
       - backend-seafile-net
     ports:
-      # TODO: Prefix with private node IP
-      - "3306:3306"
-      - "4444:4444"
-      - "4567:4567"
-      - "4568:4568"
+      - "${NODE_PRIVATE_IP:?Variable is not set or empty}:3306:3306"
+      - "${NODE_PRIVATE_IP:?Variable is not set or empty}:4444:4444"
+      - "${NODE_PRIVATE_IP:?Variable is not set or empty}:4567:4567"
+      - "${NODE_PRIVATE_IP:?Variable is not set or empty}:4568:4568"
 
 networks:
   frontend-net:
