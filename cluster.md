@@ -67,7 +67,7 @@ docker compose up -d
     # Private IP address of seafile-frontend-2
     SEAFILE_CLUSTER_2_IP=
     ```
-3. Create `/opt/seafile-compose/seafile-storage-classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
+3. Create `/opt/seafile-compose/seafile_storage_classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
 4. Start services: `docker compose up -d`
 
 **Note:** `seafile-backend` must be started before `seafile-frontend-{1,2}` since it is configured to bootstrap the cluster
@@ -99,7 +99,7 @@ docker compose up -d
     # Private IP address of seafile-frontend-2
     SEAFILE_CLUSTER_2_IP=
     ```
-3. Create `/opt/seafile-compose/seafile-storage-classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
+3. Create `/opt/seafile-compose/seafile_storage_classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
 4. Start services: `docker compose up -d`
 
 ### seafile-frontend-2
@@ -129,7 +129,7 @@ docker compose up -d
     # Private IP address of seafile-frontend-2
     SEAFILE_CLUSTER_2_IP=
     ```
-3. Create `/opt/seafile-compose/seafile-storage-classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
+3. Create `/opt/seafile-compose/seafile_storage_classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
 4. Start services: `docker compose up -d`
 
 ## Storage Class Configuration
