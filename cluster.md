@@ -47,7 +47,13 @@ services:
 ```Caddyfile
 {$SEAFILE_SERVER_HOSTNAME}
 
-reverse_proxy {$SEAFILE_FRONTEND_1_IP}:80 {$SEAFILE_FRONTEND_2_IP}:80
+reverse_proxy {$SEAFILE_FRONTEND_1_IP}:80 {$SEAFILE_FRONTEND_2_IP}:80 {
+	# Enable active healthchecks
+	health_uri /api2/ping/
+
+	# Enable passive healthchecks
+	fail_duration 30s
+}
 ```
 
 #### .env
