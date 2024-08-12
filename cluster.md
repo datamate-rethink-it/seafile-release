@@ -76,7 +76,7 @@ docker compose up -d
 1. Follow instructions in [README.md](./README.md)
 2. Modify `.env`:
     ```ini
-    COMPOSE_FILE='seafile-pe-cluster-backend.yml'
+    COMPOSE_FILE='seafile-pe-cluster-backend.yml,galera.yml'
 
     # TODO: Configure these variables
     SEAFILE_SERVER_HOSTNAME=
@@ -92,6 +92,9 @@ docker compose up -d
     MARIADB_GALERA_MARIABACKUP_PASSWORD=
     MARIADB_ROOT_PASSWORD=
     MARIADB_REPLICATION_PASSWORD=
+
+    # Cluster should be bootstrapped by seafile-backend
+    MARIADB_GALERA_CLUSTER_BOOTSTRAP='yes'
 
     # Private IP address of seafile-backend
     SEAFILE_CLUSTER_0_IP=
@@ -113,7 +116,7 @@ docker compose up -d
 1. Follow instructions in [README.md](./README.md)
 2. Modify `.env`:
     ```ini
-    COMPOSE_FILE='seafile-pe-cluster-frontend.yml'
+    COMPOSE_FILE='seafile-pe-cluster-frontend.yml,galera.yml'
 
     # The following variables must have the same values as seafile-backend:
     SEAFILE_SERVER_HOSTNAME=
@@ -129,6 +132,9 @@ docker compose up -d
     MARIADB_GALERA_MARIABACKUP_PASSWORD=
     MARIADB_ROOT_PASSWORD=
     MARIADB_REPLICATION_PASSWORD=
+
+    # Cluster should be bootstrapped by seafile-backend
+    MARIADB_GALERA_CLUSTER_BOOTSTRAP='no'
 
     # Private IP address of seafile-backend
     SEAFILE_CLUSTER_0_IP=
