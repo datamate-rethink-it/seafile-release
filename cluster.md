@@ -1,5 +1,11 @@
 # Seafile Cluster
 
+This document describes how to set up a Seafile cluster using Docker. The following instructions assume that you're using the S3 storage backend.
+
+## Architecture
+
+![Architecture](./cluster-architecture.png)
+
 ## Prerequisites
 - 4 VMs inside a private network
     - seafile-loadbalancer
@@ -12,6 +18,10 @@
 ## Instructions
 
 ### seafile-loadbalancer
+
+This node handles TLS termination and distributes the load among the frontend nodes.
+
+**Note:** These configuration settings are **not** part of this document. The following example is **only included for demonstrative purposes**.
 
 #### docker-compose.yml
 
@@ -62,6 +72,16 @@ docker compose up -d
     ```ini
     COMPOSE_FILE='seafile-pe-cluster-backend.yml'
 
+    # TODO: Configure these variables
+    SEAFILE_SERVER_HOSTNAME=
+    SEAFILE_ADMIN_EMAIL=
+    SEAFILE_ADMIN_PASSWORD=
+    SEAHUB__SECRET_KEY=
+    SEAFILE__notification__jwt_private_key=
+
+    # Private IP address of memcached host
+    MEMCACHED_HOST=
+
     # Set secure values
     MARIADB_GALERA_MARIABACKUP_PASSWORD=
     MARIADB_ROOT_PASSWORD=
@@ -80,7 +100,7 @@ docker compose up -d
 3. Create `/opt/seafile-compose/seafile_storage_classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
 4. Start services: `docker compose up -d`
 
-**Note:** `seafile-backend` must be started before `seafile-frontend-{1,2}` since it is configured to bootstrap the cluster
+**Note:** `seafile-backend` must be started before `seafile-frontend-{1,2}` since it is configured to bootstrap the Galera cluster and create/seed the Seafile databases
 
 ### seafile-frontend-1
 
@@ -90,11 +110,16 @@ docker compose up -d
     COMPOSE_FILE='seafile-pe-cluster-frontend.yml'
 
     # The following variables must have the same values as seafile-backend:
-    # TODO: Check SEAFILE_ADMIN_EMAIL + SEAFILE_ADMIN_PASSWORD
+    SEAFILE_SERVER_HOSTNAME=
     SEAFILE_ADMIN_EMAIL=
     SEAFILE_ADMIN_PASSWORD=
     SEAHUB__SECRET_KEY=
     SEAFILE__notification__jwt_private_key=
+
+    # Private IP address of memcached host
+    MEMCACHED_HOST=
+
+    # The following variables must have the same values as seafile-backend:
     MARIADB_GALERA_MARIABACKUP_PASSWORD=
     MARIADB_ROOT_PASSWORD=
     MARIADB_REPLICATION_PASSWORD=
@@ -114,37 +139,15 @@ docker compose up -d
 
 ### seafile-frontend-2
 
-1. Follow instructions in [README.md](./README.md)
-2. Modify `.env`:
-    ```ini
-    COMPOSE_FILE='seafile-pe-cluster-frontend.yml'
-
-    # The following variables must have the same values as seafile-backend:
-    # TODO: Check SEAFILE_ADMIN_EMAIL + SEAFILE_ADMIN_PASSWORD
-    SEAFILE_ADMIN_EMAIL=
-    SEAFILE_ADMIN_PASSWORD=
-    SEAHUB__SECRET_KEY=
-    SEAFILE__notification__jwt_private_key=
-    MARIADB_GALERA_MARIABACKUP_PASSWORD=
-    MARIADB_ROOT_PASSWORD=
-    MARIADB_REPLICATION_PASSWORD=
-
-    # Private IP address of seafile-backend
-    SEAFILE_CLUSTER_0_IP=
-    # Private IP address of seafile-frontend-1
-    SEAFILE_CLUSTER_1_IP=
-    # Private IP address of seafile-frontend-2
-    SEAFILE_CLUSTER_2_IP=
-
-    NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_2_NAME}
-    NODE_PRIVATE_IP=${SEAFILE_CLUSTER_2_IP}
-    ```
-3. Create `/opt/seafile-compose/seafile_storage_classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
-4. Start services: `docker compose up -d`
+Same instructions as for `seafile-frontend-1`. Only the values of `NODE_PRIVATE_{HOSTNAME,IP}` need to be different:
+```ini
+NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_2_NAME}
+NODE_PRIVATE_IP=${SEAFILE_CLUSTER_2_IP}
+```
 
 ## Storage Class Configuration
 
-Configure `host`, `key_id` and `key`:
+Configure `host` (without protocol, e.g. `s3.seafile-demo.de`), `key_id` and `key`:
 
 ```json
 [
@@ -183,6 +186,8 @@ Configure `host`, `key_id` and `key`:
 ]
 ```
 
+Please refer to [Seafile S3 Backend](https://manual.seafile.com/deploy_pro/setup_with_amazon_s3/) for detailed information.
+
 ## Add-On: MinIO
 
 Requirement: `caddy-docker-proxy` on the same host (-> [`caddy.yml`](./compose/caddy.yml))
@@ -219,3 +224,4 @@ networks:
     name: frontend-net
 ```
 
+You can use the values of `MINIO_ROOT_USER/PASSWORD` as `key_id`/`key` in `seafile_storage_classes.json` **for testing purposes**.
