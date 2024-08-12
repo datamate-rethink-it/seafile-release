@@ -57,15 +57,15 @@ docker compose up -d
     MARIADB_ROOT_PASSWORD=
     MARIADB_REPLICATION_PASSWORD=
 
-    NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_0_NAME}
-    NODE_PRIVATE_IP=${SEAFILE_CLUSTER_0_IP}
-
     # Private IP address of seafile-backend
     SEAFILE_CLUSTER_0_IP=
     # Private IP address of seafile-frontend-1
     SEAFILE_CLUSTER_1_IP=
     # Private IP address of seafile-frontend-2
     SEAFILE_CLUSTER_2_IP=
+
+    NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_0_NAME}
+    NODE_PRIVATE_IP=${SEAFILE_CLUSTER_0_IP}
     ```
 3. Create `/opt/seafile-compose/seafile_storage_classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
 4. Start services: `docker compose up -d`
@@ -89,15 +89,15 @@ docker compose up -d
     MARIADB_ROOT_PASSWORD=
     MARIADB_REPLICATION_PASSWORD=
 
-    NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_1_NAME}
-    NODE_PRIVATE_IP=${SEAFILE_CLUSTER_1_IP}
-
     # Private IP address of seafile-backend
     SEAFILE_CLUSTER_0_IP=
     # Private IP address of seafile-frontend-1
     SEAFILE_CLUSTER_1_IP=
     # Private IP address of seafile-frontend-2
     SEAFILE_CLUSTER_2_IP=
+
+    NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_1_NAME}
+    NODE_PRIVATE_IP=${SEAFILE_CLUSTER_1_IP}
     ```
 3. Create `/opt/seafile-compose/seafile_storage_classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
 4. Start services: `docker compose up -d`
@@ -119,15 +119,15 @@ docker compose up -d
     MARIADB_ROOT_PASSWORD=
     MARIADB_REPLICATION_PASSWORD=
 
-    NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_2_NAME}
-    NODE_PRIVATE_IP=${SEAFILE_CLUSTER_2_IP}
-
     # Private IP address of seafile-backend
     SEAFILE_CLUSTER_0_IP=
     # Private IP address of seafile-frontend-1
     SEAFILE_CLUSTER_1_IP=
     # Private IP address of seafile-frontend-2
     SEAFILE_CLUSTER_2_IP=
+
+    NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_2_NAME}
+    NODE_PRIVATE_IP=${SEAFILE_CLUSTER_2_IP}
     ```
 3. Create `/opt/seafile-compose/seafile_storage_classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
 4. Start services: `docker compose up -d`
@@ -176,6 +176,8 @@ Configure `host`, `key_id` and `key`:
 ## Add-On: MinIO
 
 Requirement: `caddy-docker-proxy` on the same host (-> [`caddy.yml`](./compose/caddy.yml))
+
+Add `caddy.yml,minio.yml` to `COMPOSE_FILE` inside `.env` on `seatable-backend`
 
 ### minio.yml
 ```yml
