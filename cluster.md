@@ -21,8 +21,9 @@ services:
     image: caddy:2.8.4
     restart: unless-stopped
     environment:
-      # TODO: Set value to your domain
-      - SEAFILE_SERVER_HOSTNAME=
+      - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME}
+      - SEAFILE_FRONTEND_1_IP=${SEAFILE_FRONTEND_1_IP}
+      - SEAFILE_FRONTEND_2_IP=${SEAFILE_FRONTEND_2_IP}
     ports:
       - "80:80"
       - "443:443"
@@ -36,7 +37,16 @@ services:
 ```Caddyfile
 {$SEAFILE_SERVER_HOSTNAME}
 
-reverse_proxy PRIVATE_IP_OF_seafile-frontend-1:80 PRIVATE_IP_OF_seafile-frontend-2:80
+reverse_proxy {$SEAFILE_FRONTEND_1_IP}:80 {$SEAFILE_FRONTEND_2_IP}:80
+```
+
+#### .env
+```ini
+SEAFILE_SERVER_HOSTNAME=
+
+# These should be private IP addresses
+SEAFILE_FRONTEND_1_IP=
+SEAFILE_FRONTEND_2_IP=
 ```
 
 Then:
