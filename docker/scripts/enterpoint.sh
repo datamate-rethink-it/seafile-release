@@ -23,6 +23,34 @@ while [ 1 ]; do
     fi
 done
 
+if [[ "${SEAFILE_LOG_TO_STDOUT:-false}" == "true" ]]; then
+    mkdir -p /opt/seafile/logs/slow_logs
+
+    ln -sf /dev/stdout /opt/seafile/logs/controller.log
+    ln -sf /dev/stdout /opt/seafile/logs/file_updates_sender.log
+    ln -sf /dev/stdout /opt/seafile/logs/fileserver.log
+    ln -sf /dev/stdout /opt/seafile/logs/fileserver-error.log
+    ln -sf /dev/stdout /opt/seafile/logs/index.log
+    ln -sf /dev/stdout /opt/seafile/logs/notification-server.log
+    ln -sf /dev/stdout /opt/seafile/logs/notification-server-error.log
+    ln -sf /dev/stdout /opt/seafile/logs/onlyoffice.log
+    ln -sf /dev/stdout /opt/seafile/logs/seafdav.log
+    ln -sf /dev/stdout /opt/seafile/logs/seafevents.log
+    ln -sf /dev/stdout /opt/seafile/logs/seafile.log
+    ln -sf /dev/stdout /opt/seafile/logs/seafile-background-tasks.log.log
+    ln -sf /dev/stdout /opt/seafile/logs/seafile-monitor.log
+    ln -sf /dev/stdout /opt/seafile/logs/seahub_email_sender.log
+
+    ln -sf /dev/stdout /opt/seafile/logs/slow_logs/fileserver_slow_storage.log
+    ln -sf /dev/stdout /opt/seafile/logs/slow_logs/seafile_slow_rpc.log
+    ln -sf /dev/stdout /opt/seafile/logs/slow_logs/seafile_slow_storage.log
+
+    # Workaround to forward seahub logs to stdout
+    # TODO: Find out why configuring stdout in seahub_settings.py does not work
+    touch /opt/seafile/logs/seahub.log
+    tail -f /opt/seafile/logs/seahub.log &
+fi
+# TODO: Clean up links in else branch if setting has changed from true to false?
 
 # non-noot
 if [[ $NON_ROOT == "true" ]] ;then

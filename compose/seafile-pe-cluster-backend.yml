@@ -13,6 +13,7 @@ services:
       - SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD:?Variable is not set or empty}
       - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME}
       - SEAFILE_SERVER_LETSENCRYPT=false
+      - SEAFILE_LOG_TO_STDOUT=${SEAFILE_LOG_TO_STDOUT:-false}
       - SEAFILE__notification__jwt_private_key=${SEAFILE__notification__jwt_private_key:?Variable is not set or empty}
       - SEAFEVENTS__INDEX0x20FILES__es_host=${ELASTICSEARCH_HOST:-elasticsearch}
       - SEAHUB__SECRET_KEY=${SEAHUB__SECRET_KEY:?Variable is not set or empty}
