@@ -70,6 +70,7 @@ DEFAULT_VALUES = {
     'SEAFEVENTS__FILE0x20HISTORY__suffix': 'md,txt,doc,docx,xls,xlsx,ppt,pptx,sdoc',
 
     'SEAFILE__fileserver__port': '8082',
+    'SEAFILE__fileserver__use_go_fileserver': 'true',
     'SEAFILE__database__type': 'mysql',
     'SEAFILE__database__host': os.environ.get('DB_HOST'),
     'SEAFILE__database__port': '3306',

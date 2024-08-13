@@ -48,6 +48,9 @@ services:
 {$SEAFILE_SERVER_HOSTNAME}
 
 reverse_proxy {$SEAFILE_FRONTEND_1_IP}:80 {$SEAFILE_FRONTEND_2_IP}:80 {
+  # Maps the client IP to a sticky upstream
+  lb_policy client_ip_hash
+
 	# Enable active healthchecks
 	health_uri /api2/ping/
 
