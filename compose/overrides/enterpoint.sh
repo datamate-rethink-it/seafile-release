@@ -81,6 +81,9 @@ chmod 700 /opt/seafile/{ccnet,conf,seafile-data}
 log "Creating seafile-server-latest symbolic link..."
 ln -sf "/opt/seafile/seafile-pro-server-${SEAFILE_VERSION}" /opt/seafile/seafile-server-latest
 
+log "Copying default avatars..."
+cp -nR /opt/seafile/seafile-server-latest/seahub/media/avatars/* /opt/seafile/seahub-data/avatars/
+
 # After the setup script creates all the files inside the container, we need to move them to the shared volume
 # e.g move "/opt/seafile/seafile-data" to "/shared/seafile/seafile-data"
 directories=( "conf" "ccnet" "seafile-data" "seahub-data" "pro-data" )
