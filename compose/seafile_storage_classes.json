@@ -1,0 +1,31 @@
+[
+    {
+      "storage_id": "S3",
+      "name": "S3",
+      "is_default": true,
+      "commits": {
+        "backend": "s3",
+        "host": "",
+        "bucket": "seafile-commits",
+        "key_id": "",
+        "key": "",
+        "path_style_request": true
+      },
+      "fs": {
+        "backend": "s3",
+        "host": "",
+        "bucket": "seafile-fs",
+        "key_id": "",
+        "key": "",
+        "path_style_request": true
+      },
+      "blocks": {
+        "backend": "s3",
+        "host": "",
+        "bucket": "seafile-blocks",
+        "key_id": "",
+        "key": "",
+        "path_style_request": true
+      }
+    }
+]
