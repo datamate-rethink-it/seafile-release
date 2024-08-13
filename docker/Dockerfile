@@ -1,3 +1,3 @@
 FROM docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.12
 
-COPY compose/overrides/* /scripts
+COPY scripts/* /scripts
