@@ -99,7 +99,7 @@ if __name__ == '__main__':
     host = os.environ['DB_HOST']
     # TODO: Allow port to be customized?
     port = 3306
-    user = 'root'
+    user = os.environ['DB_USER']
     password = os.environ['DB_ROOT_PASSWD']
 
     try:
