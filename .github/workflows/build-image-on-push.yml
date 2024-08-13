@@ -65,6 +65,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Authenticate against docker.seadrive.org
+        run: docker login -u seafile -p zjkmid6rQibdZ=uJMuWS docker.seadrive.org
       - name: Build image
         uses: docker/build-push-action@v6
         with:
