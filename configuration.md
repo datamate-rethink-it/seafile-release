@@ -9,6 +9,7 @@ Instead, you can configure everything through environment variables. The advanta
 - [gunicorn.conf.py](#gunicornconfpy)
 - [seahub_settings.py](#seahub_settingspy)
 - [seafile.nginx.conf](#seafilenginxconf)
+- [Seahub Customization](#seahub-customization)
 
 ## .conf Files
 
@@ -114,3 +115,21 @@ SAML_ATTRIBUTE_MAPPING = {
 It is currently not possible to customize this file. The file is overwritten on each restart.
 
 NGINX listens on port 80. There should always be a reverse proxy in front of it that also handles TLS termination (e.g. Caddy).
+
+## Seahub Customization
+You can use the following volume mounts inside `seafile-pe-cluster-frontend.yml` to modify the site logo, login background image and favicon:
+
+```yml
+services:
+  seafile:
+    # ...
+    volumes:
+      - ./your-custom-logo.png:/shared/seafile/seahub-data/custom/mylogo.png:ro
+      - ./your-custom-favicon.ico:/shared/seafile/seahub-data/custom/favicon.ico:ro
+      - ./your-custom-login-bg.jpg:/shared/seafile/seahub-data/custom/login-bg.jpg:ro
+```
+
+**Notes:**
+- The container paths should not be modified since seahub is configured to access these paths
+- You must configure these volume mounts **on all frontend nodes**
+- Seahub needs to be restarted
