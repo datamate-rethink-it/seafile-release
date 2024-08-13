@@ -91,6 +91,7 @@ jobs:
       - name: Push image
         uses: docker/build-push-action@v6
         with:
+          context: docker
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:commit-${{ steps.get_commit.outputs.short_sha }}
