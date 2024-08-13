@@ -307,6 +307,7 @@ def generate_saml_attribute_mapping() -> dict[str, tuple[str]]:
 def generate_nginx_conf_file(path: str):
     config_template = """
 server {
+    listen [::]:80;
     listen 80;
 
     server_name %(server_name)s;
