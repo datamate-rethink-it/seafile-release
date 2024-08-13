@@ -13,6 +13,7 @@ services:
       - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME}
       - SEAFILE_SERVER_LETSENCRYPT=false
       - SEAFILE__notification__jwt_private_key=${SEAFILE__notification__jwt_private_key:?Variable is not set or empty}
+      - SEAFEVENTS__INDEX0x20FILES__es_host=${ELASTICSEARCH_HOST:-elasticsearch}
       - SEAHUB__SECRET_KEY=${SEAHUB__SECRET_KEY:?Variable is not set or empty}
       - SEAHUB__CACHE_HOST=${MEMCACHED_HOST:?Variable is not set or empty}
       - SEAFILE__storage__enable_storage_classes=true
@@ -83,6 +84,8 @@ services:
       - /opt/seafile-elasticsearch:/usr/share/elasticsearch/data
     networks:
       - backend-seafile-net
+    ports:
+      - "${NODE_PRIVATE_IP}:9200:9200"
     healthcheck:
       test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
       interval: 60s

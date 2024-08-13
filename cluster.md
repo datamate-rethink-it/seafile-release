@@ -125,6 +125,9 @@ docker compose up -d
     SEAHUB__SECRET_KEY=
     SEAFILE__notification__jwt_private_key=
 
+    # Private IP address of your elasticsearch host
+    ELASTICSEARCH_HOST=
+
     # Private IP address of memcached host
     MEMCACHED_HOST=
 
