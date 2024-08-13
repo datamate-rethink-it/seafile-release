@@ -11,8 +11,6 @@ logger = logging.getLogger('generate-config-files')
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
-# TODO: Allow using a different database user (other than "root")
-
 CONFIG_DIR = '/opt/seafile/conf'
 CCNET_CONF_PATH = os.path.join(CONFIG_DIR, 'ccnet.conf')
 SEAFDAV_CONF_PATH = os.path.join(CONFIG_DIR, 'seafdav.conf')
@@ -27,6 +25,7 @@ REQUIRED_VARIABLES = [
     'SEAHUB__SECRET_KEY',
     'SEAFILE_SERVER_HOSTNAME',
     'DB_HOST',
+    'DB_USER',
     'DB_ROOT_PASSWD',
 ]
 
@@ -37,7 +36,7 @@ DEFAULT_VALUES = {
     'CCNET__Database__ENGINE': 'mysql',
     'CCNET__Database__HOST': os.environ.get('DB_HOST'),
     'CCNET__Database__PORT': '3306',
-    'CCNET__Database__USER': 'root',
+    'CCNET__Database__USER': os.environ.get('DB_USER'),
     'CCNET__Database__PASSWD': os.environ.get('DB_ROOT_PASSWD'),
     'CCNET__Database__DB': 'ccnet_db',
     'CCNET__Database__CONNECTION_CHARSET': 'utf8',
@@ -49,7 +48,7 @@ DEFAULT_VALUES = {
     'SEAFEVENTS__DATABASE__type': 'mysql',
     'SEAFEVENTS__DATABASE__host': os.environ.get('DB_HOST'),
     'SEAFEVENTS__DATABASE__port': '3306',
-    'SEAFEVENTS__DATABASE__username': 'root',
+    'SEAFEVENTS__DATABASE__username': os.environ.get('DB_USER'),
     'SEAFEVENTS__DATABASE__password': os.environ.get('DB_ROOT_PASSWD'),
     'SEAFEVENTS__DATABASE__name': 'seahub_db',
 
@@ -74,7 +73,7 @@ DEFAULT_VALUES = {
     'SEAFILE__database__type': 'mysql',
     'SEAFILE__database__host': os.environ.get('DB_HOST'),
     'SEAFILE__database__port': '3306',
-    'SEAFILE__database__user': 'root',
+    'SEAFILE__database__user': os.environ.get('DB_USER'),
     'SEAFILE__database__password': os.environ.get('DB_ROOT_PASSWD'),
     'SEAFILE__database__db_name': 'seafile_db',
     'SEAFILE__database__connection_charset': 'utf8',
@@ -183,7 +182,7 @@ DATABASES = {
 
     database_config = {
         'name': 'seahub_db',
-        'username': 'root',
+        'username': os.environ['DB_USER'],
         'password': os.environ['DB_ROOT_PASSWD'],
         'host': os.environ['DB_HOST'],
         'port': '3306',

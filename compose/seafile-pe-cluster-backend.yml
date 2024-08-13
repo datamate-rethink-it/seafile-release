@@ -6,6 +6,7 @@ services:
     container_name: seafile-server
     environment:
       - DB_HOST=${DB_HOST:-mariadb}
+      - DB_USER=${DB_USER:-root}
       - DB_ROOT_PASSWD=${MARIADB_ROOT_PASSWORD:?Variable is not set or empty}
       - TIME_ZONE=${TIME_ZONE}
       - SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL:?Variable is not set or empty}
