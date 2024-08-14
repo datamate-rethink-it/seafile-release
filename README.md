@@ -37,12 +37,6 @@ mkdir -p /opt/seafile-galera/mariadb && \
 chown 1001 /opt/seafile-galera/mariadb
 ```
 
-Login to Seafile's private repository
-
-```bash
-docker login -u seafile -p zjkmid6rQibdZ=uJMuWS docker.seadrive.org
-```
-
 Generate Secrets
 
 ```bash

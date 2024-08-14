@@ -1,7 +1,7 @@
 ---
 services:
   seafile:
-    image: ${SEAFILE_IMAGE:-docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.11}
+    image: ${SEAFILE_IMAGE:-datamate/seafile-professional:pre-11.0.12}
     restart: unless-stopped
     container_name: seafile-server
     environment:
@@ -36,10 +36,6 @@ services:
         source: "./seafile-license.txt"
         target: "/shared/seafile/seafile-license.txt"
         read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
-      - ./overrides/enterpoint.sh:/scripts/enterpoint.sh:ro
-      - ./overrides/generate-config-files.py:/scripts/generate-config-files.py:ro
-      - ./overrides/setup-databases.py:/scripts/setup-databases.py:ro
-      - ./overrides/start.py:/scripts/start.py:ro
       - ./seafile_storage_classes.json:/opt/seafile/seafile_storage_classes.json:ro
     depends_on:
       - mariadb
