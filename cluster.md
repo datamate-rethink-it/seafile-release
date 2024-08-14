@@ -242,4 +242,6 @@ networks:
     name: frontend-net
 ```
 
+To create the three buckets easily, you can simply create the necessary folders (works only in standalone FS mode, so never us this in production).
+
 You can use the values of `MINIO_ROOT_USER/PASSWORD` as `key_id`/`key` in `seafile_storage_classes.json` **for testing purposes**.
