@@ -152,3 +152,21 @@ services:
     volumes:
       - ./your-custom-styles.css:/shared/seafile/seahub-data/custom/custom.css:ro
 ```
+
+## OnlyOffice
+
+Two changes in .env: 
+- add onlyoffice.yml to ...
+- add environment variable ONLYOFFICE_JWT_SECRET
+
+Then update your custom-seafile-pe.yml:
+
+```
+environment:
+  # ...
+  - SEAHUB__ENABLE_ONLYOFFICE=True
+  - SEAHUB__ONLYOFFICE_FILE_EXTENSION=('docx', 'pptx', 'xlsx', 'odt')
+  - SEAHUB__ONLYOFFICE_EDIT_FILE_EXTENSION=('docx', 'pptx', 'xlsx', 'odt')
+  - SEAHUB__ONLYOFFICE_APIJS_URL=https://${SEAFILE_SERVER_HOSTNAME}:6233/web-apps/apps/api/documents/api.js
+  - SEAHUB__ONLYOFFICE_JWT_SECRET=topsecret
+```
