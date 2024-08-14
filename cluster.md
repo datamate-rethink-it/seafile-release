@@ -251,13 +251,13 @@ Or you do it the docker way:
 
 ```
 createbuckets:
+    container_name: createbuckets
     image: minio/mc
     depends_on:
       - minio
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc config host add myminio http://minio:9000 root your-password-used-for-MINIO_ROOT_PASSWORD;
-      #/usr/bin/mc rm -r --force myminio/seafile-commits;
       /usr/bin/mc mb myminio/seafile-commits;
       /usr/bin/mc mb myminio/seafile-blocks;
       /usr/bin/mc mb myminio/seafile-fs;
