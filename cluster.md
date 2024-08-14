@@ -243,5 +243,29 @@ networks:
 ```
 
 To create the three buckets easily, you can simply create the necessary folders (works only in standalone FS mode, so never us this in production).
+```
+mkdir -p /opt/minio_data/{seafile-blocks,seafile-commits,seafile-fs}
+```
+
+Or you do it the docker way:
+
+```
+createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio:9000 root your-password-used-for-MINIO_ROOT_PASSWORD;
+      #/usr/bin/mc rm -r --force myminio/seafile-commits;
+      /usr/bin/mc mb myminio/seafile-commits;
+      /usr/bin/mc mb myminio/seafile-blocks;
+      /usr/bin/mc mb myminio/seafile-fs;
+      exit 0;
+      "
+    networks:
+      - frontend-net
+```
+
 
 You can use the values of `MINIO_ROOT_USER/PASSWORD` as `key_id`/`key` in `seafile_storage_classes.json` **for testing purposes**.
