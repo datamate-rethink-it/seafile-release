@@ -26,7 +26,6 @@ services:
       # CLUSTER ergänzungen
       - CLUSTER_SERVER=true
       - CLUSTER_MODE=frontend
-      - SEAFILE__fileserver__use_go_fileserver=false
     # TODO: Remove labels since they are only relevant for local development?
     labels:
       caddy: ${SEAFILE_SERVER_HOSTNAME}
