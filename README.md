@@ -29,8 +29,8 @@ Create Directories
 
 ```bash
 # Elasticsearch
-mkdir -p /opt/seafile-elasticsearch && \
-chown 1000 /opt/seafile-elasticsearch
+mkdir -p /opt/seafile-elasticsearch/data && \
+chown -R 1000 /opt/seafile-elasticsearch
 
 # Galera (Seafile Cluster only)
 mkdir -p /opt/seafile-galera/mariadb && \

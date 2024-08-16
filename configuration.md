@@ -117,6 +117,9 @@ It is currently not possible to customize this file. The file is overwritten on 
 NGINX listens on port 80. There should always be a reverse proxy in front of it that also handles TLS termination (e.g. Caddy).
 
 ## Seahub Customization
+
+### Custom Images
+
 You can use the following volume mounts inside `seafile-pe-cluster-frontend.yml` to modify the site logo, login background image and favicon:
 
 ```yml
@@ -133,3 +136,37 @@ services:
 - The container paths should not be modified since seahub is configured to access these paths
 - You must configure these volume mounts **on all frontend nodes**
 - Seahub needs to be restarted
+
+### Custom Styles
+
+To use custom styles, create a css file in your seafile-compose directory and mount it into the container. Also add these two variables.
+
+```yml
+services:
+  seafile:
+    # ...
+    environment:
+      # ...
+      - SEAHUB__ENABLE_BRANDING_CSS=True
+      - SEAHUB__BRANDING_CSS=custom/custom.css
+    volumes:
+      - ./your-custom-styles.css:/shared/seafile/seahub-data/custom/custom.css:ro
+```
+
+## OnlyOffice
+
+Two changes in .env: 
+- add onlyoffice.yml to ...
+- add environment variable ONLYOFFICE_JWT_SECRET
+
+Then update your custom-seafile-pe.yml:
+
+```
+environment:
+  # ...
+  - SEAHUB__ENABLE_ONLYOFFICE=True
+  - SEAHUB__ONLYOFFICE_FILE_EXTENSION=('docx', 'pptx', 'xlsx', 'odt')
+  - SEAHUB__ONLYOFFICE_EDIT_FILE_EXTENSION=('docx', 'pptx', 'xlsx', 'odt')
+  - SEAHUB__ONLYOFFICE_APIJS_URL=https://${SEAFILE_SERVER_HOSTNAME}:6233/web-apps/apps/api/documents/api.js
+  - SEAHUB__ONLYOFFICE_JWT_SECRET=topsecret
+```
