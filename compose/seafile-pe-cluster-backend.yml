@@ -23,9 +23,10 @@ services:
       - SEAFILE__memcached__memcached_options=--SERVER=${MEMCACHED_HOST:?Variable is not set or empty} --POOL-MIN=10 --POOL-MAX=100
       - FORCE_HTTPS_IN_CONF=true
       - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-      # CLUSTER ergänzungen
       - CLUSTER_SERVER=true
       - CLUSTER_MODE=backend
+    env_file:
+      - path: /opt/seafile-compose/.env
     volumes:
       - /opt/seafile-server:/shared
       - type: bind
@@ -40,13 +41,16 @@ services:
     networks:
       - frontend-net
       - backend-seafile-net
-  # muss auf background angepasst werden...
-  #    healthcheck:
-  #      test: ["CMD-SHELL", "curl --fail http://localhost:8000 || exit 1"]
-  #      interval: 20s
-  #      retries: 3
-  #      start_period: 30s
-  #      timeout: 10s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "[ -f /opt/seafile/pids/seafile-background-tasks.pid ] || exit 1",
+        ]
+      interval: 20s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
 
   memcached:
     image: ${MEMCACHED_IMAGE:-memcached:1.6.27-bookworm}

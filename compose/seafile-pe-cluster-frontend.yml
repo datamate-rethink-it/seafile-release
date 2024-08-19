@@ -23,10 +23,10 @@ services:
       - SEAFILE__memcached__memcached_options=--SERVER=${MEMCACHED_HOST:?Variable is not set or empty} --POOL-MIN=10 --POOL-MAX=100
       - FORCE_HTTPS_IN_CONF=true
       - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-      # CLUSTER ergänzungen
       - CLUSTER_SERVER=true
       - CLUSTER_MODE=frontend
-    # TODO: Remove labels since they are only relevant for local development?
+    env_file:
+      - path: /opt/seafile-compose/.env
     labels:
       caddy: ${SEAFILE_SERVER_HOSTNAME}
       caddy.reverse_proxy: "{{upstreams 80}}"
