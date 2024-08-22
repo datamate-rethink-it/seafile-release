@@ -233,7 +233,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s:%(lineno)s %(funcName)s %(message)s'
+            'format': '%(format)s'
         },
     },
     'filters': {
@@ -298,6 +298,7 @@ LOGGING = {
     logging_config = {
         # TODO: Validate value?
         'level': os.environ.get('SEAFILE_LOG_LEVEL', 'WARNING').upper(),
+        'format': '%(asctime)s [%(levelname)s] %(name)s:%(lineno)s %(funcName)s %(message)s',
     }
 
     # Generate lines for all the other settings
