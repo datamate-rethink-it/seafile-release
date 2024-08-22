@@ -1,4 +1,4 @@
-FROM docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.13
+FROM docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.14
 
 COPY scripts/* /scripts
 

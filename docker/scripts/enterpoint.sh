@@ -113,7 +113,8 @@ if [ ! -d "$dst_custom_dir" ]; then
 fi
 
 # remove license file symlink if file is empty
-if [ ! -s /opt/seafile/seafile-license.txt ]; then
+if [ $(wc -c < /opt/seafile/seafile-license.txt) -lt 5 ]; then
+    log "license file seems to be empty and was therefore removed. Up to three users are possible."
     rm /opt/seafile/seafile-license.txt
 fi
 
