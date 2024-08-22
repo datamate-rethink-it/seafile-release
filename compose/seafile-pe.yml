@@ -14,6 +14,7 @@ services:
       - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME}
       - SEAFILE_SERVER_LETSENCRYPT=false
       - SEAFILE_LOG_TO_STDOUT=${SEAFILE_LOG_TO_STDOUT:-false}
+      - SEAFILE_LOG_LEVEL=${SEAFILE_LOG_LEVEL:-WARNING}
       - SEAFILE__notification__jwt_private_key=${SEAFILE__notification__jwt_private_key:?Variable is not set or empty}
       - SEAHUB__SECRET_KEY=${SEAHUB__SECRET_KEY:?Variable is not set or empty}
       - FORCE_HTTPS_IN_CONF=true
