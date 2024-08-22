@@ -74,9 +74,11 @@ if [[ $NON_ROOT == "true" ]] ;then
     sed -i 's/^    validate_running_user;/#    validate_running_user;/' /opt/seafile/$SEAFILE_SERVER-$SEAFILE_VERSION/seafile.sh
 fi
 
-# logrotate
-cat /scripts/logrotate-conf/logrotate-cron >> /var/spool/cron/crontabs/root
-/usr/bin/crontab /var/spool/cron/crontabs/root
+if [[ "${SEAFILE_LOG_TO_STDOUT:-false}" == "false" ]]; then
+    # logrotate
+    cat /scripts/logrotate-conf/logrotate-cron >> /var/spool/cron/crontabs/root
+    /usr/bin/crontab /var/spool/cron/crontabs/root
+fi
 
 log "Generating configuration files based on environment variables..."
 /scripts/generate-config-files.py
