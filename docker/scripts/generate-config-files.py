@@ -137,10 +137,10 @@ def generate_conf_file(path: str, prefix: str):
 
 def generate_gunicorn_config_file(path: str):
     # Source: https://github.com/haiwen/seafile-docker/blob/da9bf740e4a093a0c25c4ae9a09e08069194fc73/scripts/scripts_11.0/setup-seafile-mysql.py#L1213
-    config = """
+    config_template = """
 import os
 
-daemon = True
+daemon = %(daemon)s
 workers = 5
 
 # default localhost:8000
@@ -156,6 +156,11 @@ timeout = 1200
 limit_request_line = 8190
 """
 
+    config = {
+        # daemon mode must be turned off if logs should go to stdout
+        'daemon': os.environ.get('SEAFILE_LOG_TO_STDOUT', 'false').lower() == 'false',
+    }
+
     if not os.path.exists(path):
         logger.info(f'Generating {os.path.basename(path)} since it does not exist yet')
     else:
@@ -163,7 +168,7 @@ limit_request_line = 8190
 
     with open(path, 'w') as file:
         # Use lstrip() to remove leading whitespace
-        file.write(config.lstrip())
+        file.write(config_template.lstrip() % config)
 
 def generate_seahub_settings_file(path: str):
     database_config_template = """
@@ -216,6 +221,82 @@ CACHES = {
         'host': os.environ.get('SEAHUB__CACHE_HOST', 'memcached'),
         'port': os.environ.get('SEAHUB__CACHE_PORT', '11211'),
     }
+
+    logging_template = """
+import sys
+
+LOGGING = {
+    'version': 1,
+    # Enable existing loggers so that gunicorn errors will be bubbled up when
+    # server side error page "Internal Server Error" occurs.
+    # ref: https://www.caktusgroup.com/blog/2015/01/27/Django-Logging-Configuration-logging_config-default-settings-logger/
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s:%(lineno)s %(funcName)s %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            # 'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+            'stream': sys.stdout,
+        },
+        'default': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+            'stream': sys.stdout,
+        },
+        # TODO
+        'onlyoffice_handler': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'onlyoffice.log'),
+            'maxBytes': 1024*1024*100,  # 100 MB
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['default'],
+            'level': 'INFO',
+            'propagate': True
+        },
+        'django.request': {
+            'handlers': ['default', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': False
+        },
+        'py.warnings': {
+            'handlers': ['console', ],
+            'level': 'INFO',
+            'propagate': False
+        },
+        'onlyoffice': {
+            'handlers': ['onlyoffice_handler', ],
+            'level': 'INFO',
+            'propagate': False
+        },
+    }
+}
+"""
 
     # Generate lines for all the other settings
     lines = []
@@ -288,6 +369,10 @@ CACHES = {
         saml_attribute_mapping = generate_saml_attribute_mapping()
         if len(saml_attribute_mapping) > 0:
             file.write(f'SAML_ATTRIBUTE_MAPPING = {repr(saml_attribute_mapping)}\n')
+
+        if os.environ.get('SEAFILE_LOG_TO_STDOUT', 'false') == 'true':
+            file.write(logging_template)
+            file.write('\n')
 
         for line in lines:
             file.write(line)

@@ -44,11 +44,6 @@ if [[ "${SEAFILE_LOG_TO_STDOUT:-false}" == "true" ]]; then
     ln -sf /dev/stdout /opt/seafile/logs/slow_logs/fileserver_slow_storage.log
     ln -sf /dev/stdout /opt/seafile/logs/slow_logs/seafile_slow_rpc.log
     ln -sf /dev/stdout /opt/seafile/logs/slow_logs/seafile_slow_storage.log
-
-    # Workaround to forward seahub logs to stdout
-    # TODO: Find out why configuring stdout in seahub_settings.py does not work
-    touch /opt/seafile/logs/seahub.log
-    tail -f /opt/seafile/logs/seahub.log &
 fi
 # TODO: Clean up links in else branch if setting has changed from true to false?
 
