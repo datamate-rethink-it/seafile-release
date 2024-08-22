@@ -23,6 +23,8 @@ while [ 1 ]; do
 done
 
 if [[ "${SEAFILE_LOG_TO_STDOUT:-false}" == "true" ]]; then
+    log "Creating symbolic links inside /opt/seafile/logs..."
+
     mkdir -p /opt/seafile/logs/slow_logs
 
     ln -sf /dev/stdout /opt/seafile/logs/controller.log
