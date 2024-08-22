@@ -258,14 +258,11 @@ LOGGING = {
             'formatter': 'standard',
             'stream': sys.stdout,
         },
-        # TODO
         'onlyoffice_handler': {
             'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(LOG_DIR, 'onlyoffice.log'),
-            'maxBytes': 1024*1024*100,  # 100 MB
-            'backupCount': 5,
+            'class': 'logging.StreamHandler',
             'formatter': 'standard',
+            'stream': sys.stdout,
         },
         'mail_admins': {
             'level': 'ERROR',
