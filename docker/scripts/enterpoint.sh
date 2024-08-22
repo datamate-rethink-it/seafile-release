@@ -112,6 +112,11 @@ if [ ! -d "$dst_custom_dir" ]; then
     ln -sf "$dst_custom_dir" "$custom_dir"
 fi
 
+# remove license file symlink if file is empty
+if [ ! -s /opt/seafile/seafile-license.txt ]; then
+    rm /opt/seafile/seafile-license.txt
+fi
+
 # start cluster server
 if [[ $CLUSTER_SERVER == "true" && $SEAFILE_SERVER == "seafile-pro-server" ]] ;then
     # TODO: Check this code path
