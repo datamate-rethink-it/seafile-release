@@ -246,26 +246,26 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': '%(level)s',
             # 'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
             'stream': sys.stdout,
         },
         'default': {
-            'level': 'DEBUG',
+            'level': '%(level)s',
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
             'stream': sys.stdout,
         },
         'onlyoffice_handler': {
-            'level': 'INFO',
+            'level': '%(level)s',
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
             'stream': sys.stdout,
         },
         'mail_admins': {
-            'level': 'ERROR',
+            'level': '%(level)s',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
         }
@@ -273,27 +273,32 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['default'],
-            'level': 'INFO',
+            'level': '%(level)s',
             'propagate': True
         },
         'django.request': {
             'handlers': ['default', 'mail_admins'],
-            'level': 'INFO',
+            'level': '%(level)s',
             'propagate': False
         },
         'py.warnings': {
             'handlers': ['console', ],
-            'level': 'INFO',
+            'level': '%(level)s',
             'propagate': False
         },
         'onlyoffice': {
             'handlers': ['onlyoffice_handler', ],
-            'level': 'INFO',
+            'level': '%(level)s',
             'propagate': False
         },
     }
 }
 """
+
+    logging_config = {
+        # TODO: Validate value?
+        'level': os.environ.get('SEAFILE_LOG_LEVEL', 'WARNING').upper(),
+    }
 
     # Generate lines for all the other settings
     lines = []
@@ -368,7 +373,7 @@ LOGGING = {
             file.write(f'SAML_ATTRIBUTE_MAPPING = {repr(saml_attribute_mapping)}\n')
 
         if os.environ.get('SEAFILE_LOG_TO_STDOUT', 'false') == 'true':
-            file.write(logging_template)
+            file.write(logging_template % logging_config)
             file.write('\n')
 
         for line in lines:
