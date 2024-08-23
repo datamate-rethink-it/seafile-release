@@ -7,7 +7,6 @@ set -e
 function log() {
     local time=$(date +"%F %T")
     echo "$time $1 "
-    echo "[$time] $1 " &>> /opt/seafile/logs/enterpoint.log
 }
 
 
@@ -23,6 +22,31 @@ while [ 1 ]; do
     fi
 done
 
+if [[ "${SEAFILE_LOG_TO_STDOUT:-false}" == "true" ]]; then
+    log "Creating symbolic links inside /opt/seafile/logs..."
+
+    mkdir -p /opt/seafile/logs/slow_logs
+
+    ln -sf /dev/stdout /opt/seafile/logs/controller.log
+    ln -sf /dev/stdout /opt/seafile/logs/file_updates_sender.log
+    ln -sf /dev/stdout /opt/seafile/logs/fileserver.log
+    ln -sf /dev/stdout /opt/seafile/logs/fileserver-error.log
+    ln -sf /dev/stdout /opt/seafile/logs/index.log
+    ln -sf /dev/stdout /opt/seafile/logs/notification-server.log
+    ln -sf /dev/stdout /opt/seafile/logs/notification-server-error.log
+    ln -sf /dev/stdout /opt/seafile/logs/onlyoffice.log
+    ln -sf /dev/stdout /opt/seafile/logs/seafdav.log
+    ln -sf /dev/stdout /opt/seafile/logs/seafevents.log
+    ln -sf /dev/stdout /opt/seafile/logs/seafile.log
+    ln -sf /dev/stdout /opt/seafile/logs/seafile-background-tasks.log
+    ln -sf /dev/stdout /opt/seafile/logs/seafile-monitor.log
+    ln -sf /dev/stdout /opt/seafile/logs/seahub_email_sender.log
+
+    ln -sf /dev/stdout /opt/seafile/logs/slow_logs/fileserver_slow_storage.log
+    ln -sf /dev/stdout /opt/seafile/logs/slow_logs/seafile_slow_rpc.log
+    ln -sf /dev/stdout /opt/seafile/logs/slow_logs/seafile_slow_storage.log
+fi
+# TODO: Clean up links in else branch if setting has changed from true to false?
 
 # non-noot
 if [[ $NON_ROOT == "true" ]] ;then
@@ -51,9 +75,11 @@ if [[ $NON_ROOT == "true" ]] ;then
     sed -i 's/^    validate_running_user;/#    validate_running_user;/' /opt/seafile/$SEAFILE_SERVER-$SEAFILE_VERSION/seafile.sh
 fi
 
-# logrotate
-cat /scripts/logrotate-conf/logrotate-cron >> /var/spool/cron/crontabs/root
-/usr/bin/crontab /var/spool/cron/crontabs/root
+if [[ "${SEAFILE_LOG_TO_STDOUT:-false}" == "false" ]]; then
+    # logrotate
+    cat /scripts/logrotate-conf/logrotate-cron >> /var/spool/cron/crontabs/root
+    /usr/bin/crontab /var/spool/cron/crontabs/root
+fi
 
 log "Generating configuration files based on environment variables..."
 /scripts/generate-config-files.py
