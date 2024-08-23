@@ -468,6 +468,79 @@ server {
 }
 """
 
+    if os.environ.get('SEAFILE_LOG_TO_STDOUT', 'false').lower() == 'true':
+        config_template = """
+server {
+    listen [::]:80;
+    listen 80;
+
+    server_name %(server_name)s;
+
+    client_max_body_size 10m;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000/;
+        proxy_read_timeout 310s;
+        proxy_set_header Host $http_host;
+        proxy_set_header Forwarded "for=$remote_addr;proto=$scheme";
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Connection "";
+        proxy_http_version 1.1;
+
+        client_max_body_size 0;
+        access_log /dev/stdout seafileformat;
+        error_log /dev/stdout;
+    }
+
+    location /seafhttp {
+        rewrite ^/seafhttp(.*)$ $1 break;
+        proxy_pass http://127.0.0.1:8082;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        client_max_body_size 0;
+        proxy_connect_timeout  36000s;
+        proxy_read_timeout  36000s;
+        proxy_request_buffering off;
+        access_log /dev/stdout seafileformat;
+        error_log /dev/stdout;
+    }
+
+    location /notification/ping {
+        proxy_pass http://127.0.0.1:8083/ping;
+        access_log /dev/stdout seafileformat;
+        error_log /dev/stdout;
+    }
+
+    location /notification {
+        proxy_pass http://127.0.0.1:8083/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        access_log /dev/stdout seafileformat;
+        error_log /dev/stdout;
+    }
+
+    location /seafdav {
+        proxy_pass         http://127.0.0.1:8080;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout  1200s;
+        client_max_body_size 0;
+
+        access_log /dev/stdout seafileformat;
+        error_log /dev/stdout;
+    }
+
+    location /media {
+        root /opt/seafile/seafile-server-latest/seahub;
+    }
+}
+"""
+
     config = {
         'server_name': os.environ.get('SEAFILE_SERVER_HOSTNAME'),
     }
