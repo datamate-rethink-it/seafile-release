@@ -38,7 +38,8 @@ if [[ "${SEAFILE_LOG_TO_STDOUT:-false}" == "true" ]]; then
     ln -sf /dev/stdout /opt/seafile/logs/seafdav.log
     ln -sf /dev/stdout /opt/seafile/logs/seafevents.log
     ln -sf /dev/stdout /opt/seafile/logs/seafile.log
-    ln -sf /dev/stdout /opt/seafile/logs/seafile-background-tasks.log
+    # TODO: Fix this (logs are not visible when linked to stdout)
+    # ln -sf /dev/stdout /opt/seafile/logs/seafile-background-tasks.log
     ln -sf /dev/stdout /opt/seafile/logs/seafile-monitor.log
     ln -sf /dev/stdout /opt/seafile/logs/seahub_email_sender.log
 
