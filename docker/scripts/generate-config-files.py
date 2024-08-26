@@ -349,6 +349,11 @@ LOGGING = {
 
         # TODO: Check if key exists in seahub/settings.py to prevent errors due to typos
 
+        # Handle OnlyOffice/Collabora file extension variables
+        if key in ['OFFICE_WEB_APP_FILE_EXTENSION', 'OFFICE_WEB_APP_EDIT_FILE_EXTENSION', 'ONLYOFFICE_FILE_EXTENSION', 'ONLYOFFICE_EDIT_FILE_EXTENSION']:
+            lines.append(f'{key} = {repr(tuple(value.split(",")))}')
+            continue
+
         # Determine variable type
         if value.lower() in ['true', 'false']:
             # Boolean
