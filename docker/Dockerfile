@@ -10,4 +10,6 @@ COPY scripts/* /scripts
 # fixed with 11.0.14
 
 # 1) Remove "--logfile" argument from start_seafevents(). This forces seafevents to log to stdout (which is the default it --logfile is not specified).
-RUN sed -i 's/--logfile \${TOPDIR}\/logs\/seafevents\.log //g' /opt/seafile/seafile-pro-server-11.0.14/seafile-monitor.sh
+# 2) FileUpdateSender should log to stdout
+RUN sed -i 's/--logfile \${TOPDIR}\/logs\/seafevents\.log //g' /opt/seafile/seafile-pro-server-11.0.14/seafile-monitor.sh && \
+    sed -i 's/run_and_wait(cmd, cwd=SEAHUB_DIR, output=fp)/run_and_wait(cmd, cwd=SEAHUB_DIR)/g' /opt/seafile/seafile-pro-server-11.0.14/pro/python/seafevents/tasks/file_updates_sender.py
