@@ -1,0 +1,57 @@
+services:
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?Variable is not set or empty}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Variable is not set or empty}
+    volumes:
+      - /opt/seafile-grafana:/var/lib/grafana
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      caddy: ${GRAFANA_HOSTNAME:?Variable is not set or empty}
+      caddy.reverse_proxy: "{{upstreams 3000}}"
+    networks:
+      - frontend-net
+      - logging
+
+  loki:
+    image: grafana/loki:3.1.1
+    restart: unless-stopped
+    container_name: loki
+    healthcheck:
+      test: wget --quiet --tries=1 --output-document=- http://localhost:3100/ready | grep -q -w ready || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - logging
+
+  promtail:
+    image: grafana/promtail:3.1.1
+    restart: unless-stopped
+    container_name: promtail
+    depends_on:
+      - loki
+    volumes:
+      - ./config/promtail.yml:/etc/promtail/docker-config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/docker-config.yaml
+    networks:
+      - logging
+    healthcheck:
+      # TODO: Fix healthcheck
+      test: wget --quiet --tries=1 --output-document=- http://localhost:9080/ready | grep -q -w ready || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  logging:
+    name: logging
