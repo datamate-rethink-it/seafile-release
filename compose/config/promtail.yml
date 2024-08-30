@@ -34,5 +34,6 @@ scrape_configs:
     pipeline_stages:
       - cri: {}
       - multiline:
-          firstline: ^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},\d{3}
+          # Logs should start with date, "T" is optional separator
+          firstline: ^\d{4}-\d{2}-\d{2}[T ]\d{1,2}:\d{2}:\d{2}
           max_wait_time: 3s

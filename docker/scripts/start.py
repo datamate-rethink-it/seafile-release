@@ -7,18 +7,19 @@ the entrypoint command of the docker container.
 """
 
 import json
+import logging
 import os
 from os.path import exists, dirname, join
 import sys
 import time
 
 from utils import (
-    call, get_conf, get_install_dir, get_script, get_command_output,
-    wait_for_mysql, setup_logging
+    call, get_conf, get_install_dir, get_script, get_command_output
 )
 from upgrade import check_upgrade
-from bootstrap import init_seafile_server
 
+logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S', stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger()
 
 shared_seafiledir = '/shared/seafile'
 ssl_dir = '/shared/ssl'
@@ -37,7 +38,7 @@ def watch_controller():
         else:
             retry = 0
         time.sleep(5)
-    print('seafile controller exited unexpectedly.')
+    logger.error('seafile controller exited unexpectedly.')
     sys.exit(1)
 
 def main():
@@ -46,7 +47,7 @@ def main():
     if not exists(generated_dir):
         os.makedirs(generated_dir)
 
-    print('Checking for upgrades...', flush=True)
+    logger.info('Checking for upgrades...')
     # TODO: Future: Only do database upgrades since the config files should be immutable
     check_upgrade()
 
@@ -76,13 +77,13 @@ def main():
         if exists(password_file):
             os.unlink(password_file)
 
-    print('seafile server is running now.')
+    logger.info('seafile server is running now.')
+
     try:
         watch_controller()
     except KeyboardInterrupt:
-        print('Stopping seafile server.')
+        logger.info('Stopping seafile server.')
         sys.exit(0)
 
 if __name__ == '__main__':
-    setup_logging()
     main()

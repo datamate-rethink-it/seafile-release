@@ -13,3 +13,10 @@ COPY scripts/* /scripts
 # 2) FileUpdateSender should log to stdout
 RUN sed -i 's/--logfile \${TOPDIR}\/logs\/seafevents\.log //g' /opt/seafile/seafile-pro-server-11.0.14/seafile-monitor.sh && \
     sed -i 's/run_and_wait(cmd, cwd=SEAHUB_DIR, output=fp)/run_and_wait(cmd, cwd=SEAHUB_DIR)/g' /opt/seafile/seafile-pro-server-11.0.14/pro/python/seafevents/tasks/file_updates_sender.py
+
+# Fix seafevents log format
+RUN sed -i 's/\x27format\x27: \x27\[%(asctime)s\] \[%(levelname)s\] %(message)s\x27,/\x27format\x27: \x27%(asctime)s \[%(levelname)s\] %(message)s\x27,/g' /opt/seafile/seafile-pro-server-11.0.14/pro/python/seafevents/app/log.py && \
+    sed -i 's/%m\/%d\/%Y/%Y-%m-%d/g' /opt/seafile/seafile-pro-server-11.0.14/pro/python/seafevents/app/log.py
+
+# Fix seafile-monitor.sh log format
+RUN sed -i 's/echo "\[\$time\] \$1 "/echo "\$time \$1"/g' /opt/seafile/seafile-pro-server-11.0.14/seafile-monitor.sh

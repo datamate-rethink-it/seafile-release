@@ -8,9 +8,8 @@ import sys
 from os.path import join
 from utils import get_install_dir, wait_for_mysql
 
-logger = logging.getLogger('setup-databases')
-logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.StreamHandler(sys.stdout))
+logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S', stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger()
 
 CCNET_DB_NAME = 'ccnet_db'
 SEAFILE_DB_NAME = 'seafile_db'
