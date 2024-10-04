@@ -82,6 +82,9 @@ docker compose up -d
     COMPOSE_FILE='seafile-pe-cluster-backend.yml,galera.yml'
     COMPOSE_PATH_SEPARATOR=','
 
+    # system settings
+    TIME_ZONE='Europe/Berlin'
+
     # TODO: Configure these variables
     SEAFILE_SERVER_HOSTNAME=
     SEAFILE_ADMIN_EMAIL=
@@ -126,6 +129,9 @@ docker compose up -d
     ```ini
     COMPOSE_FILE='seafile-pe-cluster-frontend.yml,galera.yml'
     COMPOSE_PATH_SEPARATOR=','
+
+    # system settings
+    TIME_ZONE='Europe/Berlin'
 
     # The following variables must have the same values as seafile-backend:
     SEAFILE_SERVER_HOSTNAME=
