@@ -13,17 +13,17 @@ services:
       - "${SEAFILE_CLUSTER_1_NAME}:${SEAFILE_CLUSTER_1_IP}"
       - "${SEAFILE_CLUSTER_2_NAME}:${SEAFILE_CLUSTER_2_IP}"
     environment:
-      - MARIADB_GALERA_CLUSTER_NAME=${MARIADB_GALERA_CLUSTER_NAME:?Variable is not set or empty}
+      - MARIADB_GALERA_CLUSTER_NAME=${MARIADB_GALERA_CLUSTER_NAME:-galera}
       - MARIADB_GALERA_FORCE_SAFETOBOOTSTRAP=yes
-      - MARIADB_GALERA_MARIABACKUP_USER=${MARIADB_GALERA_MARIABACKUP_USER:?Variable is not set or empty}
+      - MARIADB_GALERA_MARIABACKUP_USER=${MARIADB_GALERA_MARIABACKUP_USER:-backup}
       - MARIADB_GALERA_MARIABACKUP_PASSWORD=${MARIADB_GALERA_MARIABACKUP_PASSWORD:?Variable is not set or empty}
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD:?Variable is not set or empty}
       - MARIADB_GALERA_CLUSTER_BOOTSTRAP=${MARIADB_GALERA_CLUSTER_BOOTSTRAP:?Variable is not set or empty} # valid values are "yes" and "no"
       - MARIADB_REPLICATION_PASSWORD=${MARIADB_REPLICATION_PASSWORD:?Variable is not set or empty}
-      - MARIADB_REPLICATION_USER=${MARIADB_REPLICATION_USER:?Variable is not set or empty}
+      - MARIADB_REPLICATION_USER=${MARIADB_REPLICATION_USER:-replica}
       - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://${SEAFILE_CLUSTER_0_NAME:?Variable is not set or empty},${SEAFILE_CLUSTER_1_NAME:?Variable is not set or empty},${SEAFILE_CLUSTER_2_NAME:?Variable is not set or empty}
       - MARIADB_GALERA_NODE_ADDRESS=${NODE_PRIVATE_HOSTNAME:?Variable is not set or empty}
-      - MARIADB_ENABLE_TLS=${MARIADB_ENABLE_TLS:?Variable is not set or empty}
+      - MARIADB_ENABLE_TLS=${MARIADB_ENABLE_TLS:-false}
       #- MARIADB_TLS_CERT_FILE=/bitnami/mariadb/certs/${TLS_CERT_FILE}
       #- MARIADB_TLS_KEY_FILE=/bitnami/mariadb/certs/${TLS_KEY_FILE}
       #- MARIADB_TLS_CA_FILE=/bitnami/mariadb/certs/${TLS_CA_FILE}
