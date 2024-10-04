@@ -80,6 +80,7 @@ docker compose up -d
 2. Modify `.env`:
     ```ini
     COMPOSE_FILE='seafile-pe-cluster-backend.yml,galera.yml'
+    COMPOSE_PATH_SEPARATOR=','
 
     # TODO: Configure these variables
     SEAFILE_SERVER_HOSTNAME=
@@ -109,7 +110,6 @@ docker compose up -d
     SEAFILE_CLUSTER_0_NAME=
     SEAFILE_CLUSTER_1_NAME=
     SEAFILE_CLUSTER_2_NAME=
-    MARIADB_GALERA_CLUSTER_NAME=
 
     NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_0_NAME}
     NODE_PRIVATE_IP=${SEAFILE_CLUSTER_0_IP}
@@ -125,6 +125,7 @@ docker compose up -d
 2. Modify `.env`:
     ```ini
     COMPOSE_FILE='seafile-pe-cluster-frontend.yml,galera.yml'
+    COMPOSE_PATH_SEPARATOR=','
 
     # The following variables must have the same values as seafile-backend:
     SEAFILE_SERVER_HOSTNAME=
@@ -157,7 +158,6 @@ docker compose up -d
     SEAFILE_CLUSTER_0_NAME=
     SEAFILE_CLUSTER_1_NAME=
     SEAFILE_CLUSTER_2_NAME=
-    MARIADB_GALERA_CLUSTER_NAME=
 
     NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_1_NAME}
     NODE_PRIVATE_IP=${SEAFILE_CLUSTER_1_IP}
