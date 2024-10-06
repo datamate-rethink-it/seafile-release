@@ -7,9 +7,8 @@ import sys
 
 from bootstrap import get_proto
 
-logger = logging.getLogger('generate-config-files')
-logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.StreamHandler(sys.stdout))
+logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S', stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger()
 
 CONFIG_DIR = '/opt/seafile/conf'
 CCNET_CONF_PATH = os.path.join(CONFIG_DIR, 'ccnet.conf')
@@ -475,6 +474,9 @@ server {
 
     if os.environ.get('SEAFILE_LOG_TO_STDOUT', 'false').lower() == 'true':
         config_template = """
+# Customized log format (time first)
+log_format seafile '$time_iso8601 $http_x_forwarded_for $remote_addr "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $upstream_response_time';
+
 server {
     listen [::]:80;
     listen 80;
@@ -495,7 +497,7 @@ server {
         proxy_http_version 1.1;
 
         client_max_body_size 0;
-        access_log /dev/stdout seafileformat;
+        access_log /dev/stdout seafile;
         error_log /dev/stdout;
     }
 
@@ -507,13 +509,13 @@ server {
         proxy_connect_timeout  36000s;
         proxy_read_timeout  36000s;
         proxy_request_buffering off;
-        access_log /dev/stdout seafileformat;
+        access_log /dev/stdout seafile;
         error_log /dev/stdout;
     }
 
     location /notification/ping {
         proxy_pass http://127.0.0.1:8083/ping;
-        access_log /dev/stdout seafileformat;
+        access_log /dev/stdout seafile;
         error_log /dev/stdout;
     }
 
@@ -522,7 +524,7 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        access_log /dev/stdout seafileformat;
+        access_log /dev/stdout seafile;
         error_log /dev/stdout;
     }
 
@@ -536,7 +538,7 @@ server {
         proxy_read_timeout  1200s;
         client_max_body_size 0;
 
-        access_log /dev/stdout seafileformat;
+        access_log /dev/stdout seafile;
         error_log /dev/stdout;
     }
 

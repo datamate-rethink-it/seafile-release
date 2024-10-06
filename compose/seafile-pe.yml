@@ -24,6 +24,8 @@ services:
     labels:
       caddy: ${SEAFILE_SERVER_HOSTNAME}
       caddy.reverse_proxy: "{{upstreams 80}}"
+      logging: "promtail"
+      logging_jobname: "containerlogs"
     volumes:
       - /opt/seafile-server:/shared
       - type: bind

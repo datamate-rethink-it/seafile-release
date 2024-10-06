@@ -9,21 +9,24 @@ function log() {
     echo "$time $1 "
 }
 
+function log_info() {
+    log "[INFO] $1"
+}
 
 # check nginx
 while [ 1 ]; do
     process_num=$(ps -ef | grep "/usr/sbin/nginx" | grep -v "grep" | wc -l)
     if [ $process_num -eq 0 ]; then
-        log "Waiting Nginx"
+        log_info "Waiting Nginx"
         sleep 0.2
     else
-        log "Nginx ready"
+        log_info "Nginx ready"
         break
     fi
 done
 
 if [[ "${SEAFILE_LOG_TO_STDOUT:-false}" == "true" ]]; then
-    log "Creating symbolic links inside /opt/seafile/logs..."
+    log_info "Creating symbolic links inside /opt/seafile/logs..."
 
     mkdir -p /opt/seafile/logs/slow_logs
 
@@ -51,7 +54,7 @@ fi
 
 # non-noot
 if [[ $NON_ROOT == "true" ]] ;then
-    log "Create linux user seafile in container, please wait."
+    log_info "Create linux user seafile in container, please wait."
     groupadd --gid 8000 seafile 
     useradd --home-dir /home/seafile --create-home --uid 8000 --gid 8000 --shell /bin/sh --skel /dev/null seafile
 
@@ -82,33 +85,33 @@ if [[ "${SEAFILE_LOG_TO_STDOUT:-false}" == "false" ]]; then
     /usr/bin/crontab /var/spool/cron/crontabs/root
 fi
 
-log "Generating configuration files based on environment variables..."
+log_info "Generating configuration files based on environment variables..."
 /scripts/generate-config-files.py
 
-log "Checking seahub_settings.py for syntax errors..."
+log_info "Checking seahub_settings.py for syntax errors..."
 python3 -m py_compile /opt/seafile/conf/seahub_settings.py
 
 # Link seafile.nginx.conf into /etc/nginx/sites-enabled/
 ln -sf /shared/nginx/conf/seafile.nginx.conf /etc/nginx/sites-enabled/seafile.nginx.conf
 
-log "Reloading NGINX..."
+log_info "Reloading NGINX..."
 nginx -s reload
 
 /scripts/setup-databases.py
 
-log "Creating required directories..."
+log_info "Creating required directories..."
 mkdir -p /opt/seafile/{ccnet,seafile-data/library-template,seahub-data/avatars}
 
 
-log "Setting file permissions..."
+log_info "Setting file permissions..."
 # Taken from setup-seafile-mysql.py::set_file_perm()
 chmod 600 /opt/seafile/conf/seahub_settings.py
 chmod 700 /opt/seafile/{ccnet,conf,seafile-data}
 
-log "Creating seafile-server-latest symbolic link..."
+log_info "Creating seafile-server-latest symbolic link..."
 ln -sf "/opt/seafile/seafile-pro-server-${SEAFILE_VERSION}" /opt/seafile/seafile-server-latest
 
-log "Copying default avatars..."
+log_info "Copying default avatars..."
 cp -nR /opt/seafile/seafile-server-latest/seahub/media/avatars/* /opt/seafile/seahub-data/avatars/
 
 # After the setup script creates all the files inside the container, we need to move them to the shared volume
@@ -124,10 +127,10 @@ for directory in "${directories[@]}"; do
 done
 
 if [ ! -f /shared/seafile/seafile-data/current_version ]; then
-    log "Creating /shared/seafile/seafile-data/current_version..."
+    log_info "Creating /shared/seafile/seafile-data/current_version..."
     echo "${SEAFILE_VERSION}" > /shared/seafile/seafile-data/current_version
 else
-    log "/shared/seafile/seafile-data/current_version already exists"
+    log_info "/shared/seafile/seafile-data/current_version already exists"
 fi
 
 # Create directory for custom site logo/favicon/...
@@ -141,7 +144,7 @@ fi
 
 # remove license file symlink if file is empty
 if [ $(wc -c < /opt/seafile/seafile-license.txt) -lt 5 ]; then
-    log "license file seems to be empty and was therefore removed. Up to three users are possible."
+    log_info "license file seems to be empty and was therefore removed. Up to three users are possible."
     rm /opt/seafile/seafile-license.txt
 fi
 
@@ -156,7 +159,7 @@ else
 fi
 
 
-log "This is an idle script (infinite loop) to keep container running."
+log_info "This is an idle script (infinite loop) to keep container running."
 
 function cleanup() {
     kill -s SIGTERM $!
