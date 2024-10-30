@@ -95,12 +95,6 @@ docker compose up -d
    SEAHUB__SECRET_KEY=
    SEAFILE__notification__jwt_private_key=
 
-   # Private IP address of your elasticsearch host
-   ELASTICSEARCH_HOST=
-
-   # Private IP address of memcached host
-   MEMCACHED_HOST=
-
    # Set secure values
    MARIADB_GALERA_MARIABACKUP_PASSWORD=
    MARIADB_ROOT_PASSWORD=
@@ -152,10 +146,8 @@ docker compose up -d
    SEAHUB__SECRET_KEY=
    SEAFILE__notification__jwt_private_key=
 
-   # Private IP address of your elasticsearch host
+   # Private IP address of your elasticsearch and memcached host (typically the seafile-backend)
    ELASTICSEARCH_HOST=
-
-   # Private IP address of memcached host
    MEMCACHED_HOST=
 
    # The following variables must have the same values as seafile-backend:
@@ -177,6 +169,7 @@ docker compose up -d
    SEAFILE_CLUSTER_1_NAME=
    SEAFILE_CLUSTER_2_NAME=
 
+   # DON'T FORGET TO UPDATE THE NUMBER !!!
    NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_1_NAME}
    NODE_PRIVATE_IP=${SEAFILE_CLUSTER_1_IP}
    ```

@@ -1,7 +1,7 @@
 ---
 services:
   seafile:
-    image: ${SEAFILE_IMAGE:-datamate/seafile-professional:11.0.14}
+    image: ${SEAFILE_IMAGE:-datamate/seafile-professional:11.0.15}
     restart: unless-stopped
     container_name: seafile-server
     environment:
@@ -22,7 +22,7 @@ services:
       - SEAFILE__storage__enable_storage_classes=true
       - SEAFILE__storage__storage_classes_file=/opt/seafile/seafile_storage_classes.json
       - SEAFILE__cluster__enabled=true
-      - SEAFILE__memcached__memcached_options=--SERVER=${MEMCACHED_HOST:?Variable is not set or empty} --POOL-MIN=10 --POOL-MAX=100
+      - SEAFILE__memcached__memcached_options=--SERVER=${MEMCACHED_HOST:-memcached} --POOL-MIN=10 --POOL-MAX=100
       - FORCE_HTTPS_IN_CONF=true
       - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
       - CLUSTER_SERVER=true
