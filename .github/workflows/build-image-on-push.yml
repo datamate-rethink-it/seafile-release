@@ -78,7 +78,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ needs.init-vars.outputs.git_tag_prefix }}${{ needs.init-vars.outputs.version }}
           # TODO: Add "opencontainers" labels
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: "${{ env.IMAGE_NAME }}:commit-${{ steps.get_commit.outputs.short_sha }}"
           format: "table"
