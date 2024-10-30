@@ -7,13 +7,14 @@ This document describes how to set up a Seafile cluster using Docker. The follow
 ![Architecture](./cluster-architecture.png)
 
 ## Prerequisites
+
 - 4 VMs inside a private network
-    - seafile-loadbalancer
-    - seafile-backend
-    - seafile-frontend-1
-    - seafile-frontend-2
+  - seafile-loadbalancer
+  - seafile-backend
+  - seafile-frontend-1
+  - seafile-frontend-2
 - S3
-    - Buckets: `seafile-blocks`, `seafile-commits`, `seafile-fs`
+  - Buckets: `seafile-blocks`, `seafile-commits`, `seafile-fs`
 
 ## Instructions
 
@@ -60,6 +61,7 @@ reverse_proxy {$SEAFILE_FRONTEND_1_IP}:80 {$SEAFILE_FRONTEND_2_IP}:80 {
 ```
 
 #### .env
+
 ```ini
 SEAFILE_SERVER_HOSTNAME=
 
@@ -78,47 +80,56 @@ docker compose up -d
 
 1. Follow instructions in [README.md](./README.md)
 2. Modify `.env`:
-    ```ini
-    COMPOSE_FILE='seafile-pe-cluster-backend.yml,galera.yml'
-    COMPOSE_PATH_SEPARATOR=','
 
-    # system settings
-    TIME_ZONE='Europe/Berlin'
+   ```ini
+   COMPOSE_FILE='seafile-pe-cluster-backend.yml,galera.yml'
+   COMPOSE_PATH_SEPARATOR=','
 
-    # TODO: Configure these variables
-    SEAFILE_SERVER_HOSTNAME=
-    SEAFILE_ADMIN_EMAIL=
-    SEAFILE_ADMIN_PASSWORD=
-    SEAHUB__SECRET_KEY=
-    SEAFILE__notification__jwt_private_key=
+   # system settings
+   TIME_ZONE='Europe/Berlin'
 
-    # Private IP address of memcached host
-    MEMCACHED_HOST=
+   # TODO: Configure these variables
+   SEAFILE_SERVER_HOSTNAME=
+   SEAFILE_ADMIN_EMAIL=
+   SEAFILE_ADMIN_PASSWORD=
+   SEAHUB__SECRET_KEY=
+   SEAFILE__notification__jwt_private_key=
 
-    # Set secure values
-    MARIADB_GALERA_MARIABACKUP_PASSWORD=
-    MARIADB_ROOT_PASSWORD=
-    MARIADB_REPLICATION_PASSWORD=
+   # Private IP address of your elasticsearch host
+   ELASTICSEARCH_HOST=
 
-    # Cluster should be bootstrapped by seafile-backend
-    MARIADB_GALERA_CLUSTER_BOOTSTRAP='yes'
+   # Private IP address of memcached host
+   MEMCACHED_HOST=
 
-    # Private IP address of seafile-backend
-    SEAFILE_CLUSTER_0_IP=
-    # Private IP address of seafile-frontend-1
-    SEAFILE_CLUSTER_1_IP=
-    # Private IP address of seafile-frontend-2
-    SEAFILE_CLUSTER_2_IP=
-    
-    SEAFILE_CLUSTER_0_NAME=
-    SEAFILE_CLUSTER_1_NAME=
-    SEAFILE_CLUSTER_2_NAME=
+   # Set secure values
+   MARIADB_GALERA_MARIABACKUP_PASSWORD=
+   MARIADB_ROOT_PASSWORD=
+   MARIADB_REPLICATION_PASSWORD=
 
-    NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_0_NAME}
-    NODE_PRIVATE_IP=${SEAFILE_CLUSTER_0_IP}
-    ```
+   # Cluster should be bootstrapped by seafile-backend
+   MARIADB_GALERA_CLUSTER_BOOTSTRAP='yes'
+
+   # Private IP address of seafile-backend
+   SEAFILE_CLUSTER_0_IP=
+   # Private IP address of seafile-frontend-1
+   SEAFILE_CLUSTER_1_IP=
+   # Private IP address of seafile-frontend-2
+   SEAFILE_CLUSTER_2_IP=
+
+   SEAFILE_CLUSTER_0_NAME=
+   SEAFILE_CLUSTER_1_NAME=
+   SEAFILE_CLUSTER_2_NAME=
+
+   NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_0_NAME}
+   NODE_PRIVATE_IP=${SEAFILE_CLUSTER_0_IP}
+   ```
+
 3. Create `/opt/seafile-compose/seafile_storage_classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
 4. Start services: `docker compose up -d`
+
+!!! warning "Max length of MARIADB_ROOT_PASSWORD"
+
+    The maximum length of the MARIADB_ROOT_PASSWORD string is 32 characters. Read more at https://mariadb.com/kb/en/change-master-to/#master_password.
 
 **Note:** `seafile-backend` must be started before `seafile-frontend-{1,2}` since it is configured to bootstrap the Galera cluster and create/seed the Seafile databases
 
@@ -126,54 +137,57 @@ docker compose up -d
 
 1. Follow instructions in [README.md](./README.md)
 2. Modify `.env`:
-    ```ini
-    COMPOSE_FILE='seafile-pe-cluster-frontend.yml,galera.yml'
-    COMPOSE_PATH_SEPARATOR=','
 
-    # system settings
-    TIME_ZONE='Europe/Berlin'
+   ```ini
+   COMPOSE_FILE='seafile-pe-cluster-frontend.yml,galera.yml'
+   COMPOSE_PATH_SEPARATOR=','
 
-    # The following variables must have the same values as seafile-backend:
-    SEAFILE_SERVER_HOSTNAME=
-    SEAFILE_ADMIN_EMAIL=
-    SEAFILE_ADMIN_PASSWORD=
-    SEAHUB__SECRET_KEY=
-    SEAFILE__notification__jwt_private_key=
+   # system settings
+   TIME_ZONE='Europe/Berlin'
 
-    # Private IP address of your elasticsearch host
-    ELASTICSEARCH_HOST=
+   # The following variables must have the same values as seafile-backend:
+   SEAFILE_SERVER_HOSTNAME=
+   SEAFILE_ADMIN_EMAIL=
+   SEAFILE_ADMIN_PASSWORD=
+   SEAHUB__SECRET_KEY=
+   SEAFILE__notification__jwt_private_key=
 
-    # Private IP address of memcached host
-    MEMCACHED_HOST=
+   # Private IP address of your elasticsearch host
+   ELASTICSEARCH_HOST=
 
-    # The following variables must have the same values as seafile-backend:
-    MARIADB_GALERA_MARIABACKUP_PASSWORD=
-    MARIADB_ROOT_PASSWORD=
-    MARIADB_REPLICATION_PASSWORD=
+   # Private IP address of memcached host
+   MEMCACHED_HOST=
 
-    # Cluster should be bootstrapped by seafile-backend
-    MARIADB_GALERA_CLUSTER_BOOTSTRAP='no'
+   # The following variables must have the same values as seafile-backend:
+   MARIADB_GALERA_MARIABACKUP_PASSWORD=
+   MARIADB_ROOT_PASSWORD=
+   MARIADB_REPLICATION_PASSWORD=
 
-    # Private IP address of seafile-backend
-    SEAFILE_CLUSTER_0_IP=
-    # Private IP address of seafile-frontend-1
-    SEAFILE_CLUSTER_1_IP=
-    # Private IP address of seafile-frontend-2
-    SEAFILE_CLUSTER_2_IP=
+   # Cluster should be bootstrapped by seafile-backend
+   MARIADB_GALERA_CLUSTER_BOOTSTRAP='no'
 
-    SEAFILE_CLUSTER_0_NAME=
-    SEAFILE_CLUSTER_1_NAME=
-    SEAFILE_CLUSTER_2_NAME=
+   # Private IP address of seafile-backend
+   SEAFILE_CLUSTER_0_IP=
+   # Private IP address of seafile-frontend-1
+   SEAFILE_CLUSTER_1_IP=
+   # Private IP address of seafile-frontend-2
+   SEAFILE_CLUSTER_2_IP=
 
-    NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_1_NAME}
-    NODE_PRIVATE_IP=${SEAFILE_CLUSTER_1_IP}
-    ```
+   SEAFILE_CLUSTER_0_NAME=
+   SEAFILE_CLUSTER_1_NAME=
+   SEAFILE_CLUSTER_2_NAME=
+
+   NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_1_NAME}
+   NODE_PRIVATE_IP=${SEAFILE_CLUSTER_1_IP}
+   ```
+
 3. Create `/opt/seafile-compose/seafile_storage_classes.json` (-> [Storage Class Configuration](#storage-class-configuration))
 4. Start services: `docker compose up -d`
 
 ### seafile-frontend-2
 
 Same instructions as for `seafile-frontend-1`. Only the values of `NODE_PRIVATE_{HOSTNAME,IP}` need to be different:
+
 ```ini
 NODE_PRIVATE_HOSTNAME=${SEAFILE_CLUSTER_2_NAME}
 NODE_PRIVATE_IP=${SEAFILE_CLUSTER_2_IP}
@@ -185,42 +199,44 @@ Configure `host` (without protocol, e.g. `s3.seafile-demo.de`), `key_id` and `ke
 
 ```json
 [
-    {
-      "storage_id": "S3",
-      "name": "S3",
-      "is_default": true,
-      "commits": {
-        "backend": "s3",
-        "host": "",
-        "use_https": true,
-        "bucket": "seafile-commits",
-        "key_id": "",
-        "key": "",
-        "path_style_request": true
-      },
-      "fs": {
-        "backend": "s3",
-        "host": "",
-        "use_https": true,
-        "bucket": "seafile-fs",
-        "key_id": "",
-        "key": "",
-        "path_style_request": true
-      },
-      "blocks": {
-        "backend": "s3",
-        "host": "",
-        "use_https": true,
-        "bucket": "seafile-blocks",
-        "key_id": "",
-        "key": "",
-        "path_style_request": true
-      }
+  {
+    "storage_id": "S3",
+    "name": "S3",
+    "is_default": true,
+    "commits": {
+      "backend": "s3",
+      "host": "",
+      "use_https": true,
+      "bucket": "seafile-commits",
+      "key_id": "",
+      "key": "",
+      "path_style_request": true
+    },
+    "fs": {
+      "backend": "s3",
+      "host": "",
+      "use_https": true,
+      "bucket": "seafile-fs",
+      "key_id": "",
+      "key": "",
+      "path_style_request": true
+    },
+    "blocks": {
+      "backend": "s3",
+      "host": "",
+      "use_https": true,
+      "bucket": "seafile-blocks",
+      "key_id": "",
+      "key": "",
+      "path_style_request": true
     }
+  }
 ]
 ```
 
 Please refer to [Seafile S3 Backend](https://manual.seafile.com/deploy_pro/setup_with_amazon_s3/) for detailed information.
+
+TODO: add description for nfs...
 
 ## Add-On: MinIO
 
@@ -229,6 +245,7 @@ Requirement: `caddy-docker-proxy` on the same host (-> [`caddy.yml`](./compose/c
 Add `caddy.yml,minio.yml` to `COMPOSE_FILE` inside `.env` on `seatable-backend`
 
 ### minio.yml
+
 ```yml
 services:
   minio:
@@ -237,7 +254,7 @@ services:
     networks:
       - frontend-net
     volumes:
-      - '/opt/minio_data:/data'
+      - "/opt/minio_data:/data"
     environment:
       # TODO
       - MINIO_ROOT_USER=
@@ -259,6 +276,7 @@ networks:
 ```
 
 To create the three buckets easily, you can simply create the necessary folders (works only in standalone FS mode, so never us this in production).
+
 ```
 mkdir -p /opt/minio_data/{seafile-blocks,seafile-commits,seafile-fs}
 ```
@@ -283,5 +301,8 @@ createbuckets:
       - frontend-net
 ```
 
-
 You can use the values of `MINIO_ROOT_USER/PASSWORD` as `key_id`/`key` in `seafile_storage_classes.json` **for testing purposes**.
+
+## Add-On: external load balancer
+
+If you use a load balancer, that is not part of the docker network, then you have to create a custom.yml file (based on seafile-pe-cluster-frontend.yml) and expose the port 80.

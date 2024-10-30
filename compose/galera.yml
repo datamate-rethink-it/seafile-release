@@ -2,7 +2,7 @@
 services:
   mariadb:
     image: ${MARIADB_GALERA_IMAGE:-docker.io/bitnami/mariadb-galera:10.11}
-    container_name: seafile-galera
+    container_name: mariadb
     hostname: ${NODE_PRIVATE_HOSTNAME:?Variable is not set or empty}
     volumes:
       - /opt/seafile-galera/mariadb:/bitnami/mariadb
