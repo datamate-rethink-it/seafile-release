@@ -7,7 +7,7 @@ on:
       - "pre-v*.*.*"
 
 env:
-  IMAGE_NAME: 'datamate/seafile-professional'
+  IMAGE_NAME: "datamate/seafile-professional"
 
 jobs:
   init-vars:
@@ -80,14 +80,19 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.24.0
         with:
-          image-ref: '${{ env.IMAGE_NAME }}:commit-${{ steps.get_commit.outputs.short_sha }}'
-          format: 'table'
+          image-ref: "${{ env.IMAGE_NAME }}:commit-${{ steps.get_commit.outputs.short_sha }}"
+          format: "table"
           # Let workflow fail if image contains vulnerabilities
           # exit-code: '1'
-          scanners: 'vuln,misconfig'
+          exit-code: "0"
+          scanners: "vuln,misconfig"
           ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+        env:
+          # Use multiple repositories to limit the likelihood of encountering rate limits
+          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db
+
       - name: Push image
         uses: docker/build-push-action@v6
         with:
