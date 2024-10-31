@@ -2,6 +2,10 @@ FROM docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.16
 
 COPY scripts/* /scripts
 
+# Disable buffered I/O since it can cause logs to appearch much later
+# Performance impact should be negligible
+ENV PYTHONUNBUFFERED=1
+
 ##
 # Fixes and Patches
 
