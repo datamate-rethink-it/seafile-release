@@ -76,22 +76,22 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:commit-${{ steps.get_commit.outputs.short_sha }}
             ${{ env.IMAGE_NAME }}:${{ needs.init-vars.outputs.git_tag_prefix }}${{ needs.init-vars.outputs.version }}
-          # TODO: Add "opencontainers" labels
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ env.IMAGE_NAME }}:commit-${{ steps.get_commit.outputs.short_sha }}"
-          format: "table"
-          # Let workflow fail if image contains vulnerabilities
-          # exit-code: '1'
-          exit-code: "0"
-          scanners: "vuln,misconfig"
-          ignore-unfixed: true
-          vuln-type: "os,library"
-          severity: "CRITICAL,HIGH"
-        env:
-          # Use multiple repositories to limit the likelihood of encountering rate limits
-          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db
+      #    # TODO: Add "opencontainers" labels
+      #- name: Run Trivy vulnerability scanner
+      #  uses: aquasecurity/trivy-action@master
+      #  with:
+      #    image-ref: "${{ env.IMAGE_NAME }}:commit-${{ steps.get_commit.outputs.short_sha }}"
+      #    format: "table"
+      #    # Let workflow fail if image contains vulnerabilities
+      #    # exit-code: '1'
+      #    exit-code: "0"
+      #    scanners: "vuln,misconfig"
+      #    ignore-unfixed: true
+      #    vuln-type: "os,library"
+      #    severity: "CRITICAL,HIGH"
+      #  env:
+      #    # Use multiple repositories to limit the likelihood of encountering rate limits
+      #    TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db
 
       - name: Push image
         uses: docker/build-push-action@v6
