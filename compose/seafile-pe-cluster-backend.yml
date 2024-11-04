@@ -1,7 +1,7 @@
 ---
 services:
   seafile:
-    image: ${SEAFILE_IMAGE:-datamate/seafile-professional:11.0.15}
+    image: ${SEAFILE_IMAGE:-datamate/seafile-professional:11.0.16}
     restart: unless-stopped
     container_name: seafile-server
     environment:
