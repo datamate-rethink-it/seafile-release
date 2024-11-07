@@ -403,7 +403,7 @@ def generate_saml_attribute_mapping() -> dict[str, tuple[str]]:
 def generate_nginx_conf_file(path: str):
     config_template = """
 server {
-    listen [::]:80;
+    %(listen_ipv6_directive)s
     listen 80;
 
     server_name %(server_name)s;
@@ -476,7 +476,7 @@ server {
     if os.environ.get('SEAFILE_LOG_TO_STDOUT', 'false').lower() == 'true':
         config_template = """
 server {
-    listen [::]:80;
+    %(listen_ipv6_directive)s
     listen 80;
 
     server_name %(server_name)s;
@@ -548,6 +548,7 @@ server {
 
     config = {
         'server_name': os.environ.get('SEAFILE_SERVER_HOSTNAME'),
+        'listen_ipv6_directive': 'listen [::]:80;' if os.environ.get('ENABLE_IPV6', 'true').lower() == 'true' else '',
     }
 
     if not os.path.exists(path):
