@@ -15,6 +15,7 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 CCNET_DB_NAME = 'ccnet_db'
 SEAFILE_DB_NAME = 'seafile_db'
 SEAHUB_DB_NAME = 'seahub_db'
+SDOC_DB_NAME = 'sdoc_db'
 
 INSTALL_DIR = get_install_dir()
 
@@ -111,7 +112,7 @@ if __name__ == '__main__':
             logger.error('Failed to connect to mysql server using user "%s" and password "***": %s', user, e.args[1])
         sys.exit(1)
 
-    databases = [CCNET_DB_NAME, SEAFILE_DB_NAME, SEAHUB_DB_NAME]
+    databases = [CCNET_DB_NAME, SEAFILE_DB_NAME, SEAHUB_DB_NAME, SDOC_DB_NAME]
     for database in databases:
         create_database(connection, database)
 
