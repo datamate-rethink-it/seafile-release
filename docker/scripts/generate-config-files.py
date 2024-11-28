@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import configparser
+import json
 import logging
 import os
 import sys
@@ -18,6 +19,7 @@ SEAFEVENTS_CONF_PATH = os.path.join(CONFIG_DIR, 'seafevents.conf')
 SEAFILE_CONF_PATH = os.path.join(CONFIG_DIR, 'seafile.conf')
 GUNICORN_CONF_PATH = os.path.join(CONFIG_DIR, 'gunicorn.conf.py')
 SEAHUB_SETTINGS_PATH = os.path.join(CONFIG_DIR, 'seahub_settings.py')
+SEAFILE_ROLES_PATH = os.path.join(CONFIG_DIR, 'seafile_roles.json')
 NGINX_CONF_PATH = '/shared/nginx/conf/seafile.nginx.conf'
 
 REQUIRED_VARIABLES = [
@@ -388,6 +390,15 @@ LOGGING = {
         for line in lines:
             file.write(line)
             file.write('\n')
+
+        # Roles can be specified using a JSON file
+        if os.path.exists(SEAFILE_ROLES_PATH):
+            logger.info('Loading user role definitions from %s into %s...', os.path.basename(SEAFILE_ROLES_PATH), os.path.basename(SEAHUB_SETTINGS_PATH))
+            with open (SEAFILE_ROLES_PATH, "r") as roles_file:
+                file.writelines([
+                    f'\n# Role definitions imported from {os.path.basename(SEAFILE_ROLES_PATH)}:\n',
+                    f'ENABLED_ROLE_PERMISSIONS = {repr(json.load(roles_file))}\n',
+                ])
 
 def generate_saml_attribute_mapping() -> dict[str, tuple[str]]:
     saml_attribute_mapping = {}
