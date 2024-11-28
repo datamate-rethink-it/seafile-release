@@ -20,7 +20,11 @@ services:
       caddy.reverse_proxy: "{{upstreams 80}}"
     networks:
       - frontend-net
+      # Required for subfolder installation (proxied through NGINX)
+      - backend-seafile-net
 
 networks:
   frontend-net:
     name: frontend-net
+  backend-seafile-net:
+    name: backend-seafile-net
