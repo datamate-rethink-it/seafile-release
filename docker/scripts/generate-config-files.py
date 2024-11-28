@@ -19,6 +19,7 @@ SEAFEVENTS_CONF_PATH = os.path.join(CONFIG_DIR, 'seafevents.conf')
 SEAFILE_CONF_PATH = os.path.join(CONFIG_DIR, 'seafile.conf')
 GUNICORN_CONF_PATH = os.path.join(CONFIG_DIR, 'gunicorn.conf.py')
 SEAHUB_SETTINGS_PATH = os.path.join(CONFIG_DIR, 'seahub_settings.py')
+SEAHUB_SETTINGS_OVERRIDES_CONF_PATH = os.path.join(CONFIG_DIR, 'seahub_settings_overrides.py')
 SEAFILE_ROLES_PATH = os.path.join(CONFIG_DIR, 'seafile_roles.json')
 NGINX_CONF_PATH = '/shared/nginx/conf/seafile.nginx.conf'
 
@@ -398,6 +399,15 @@ LOGGING = {
                 file.writelines([
                     f'\n# Role definitions imported from {os.path.basename(SEAFILE_ROLES_PATH)}:\n',
                     f'ENABLED_ROLE_PERMISSIONS = {repr(json.load(roles_file))}\n',
+                ])
+
+        # Allow loading overrides file
+        if os.path.exists(SEAHUB_SETTINGS_OVERRIDES_CONF_PATH):
+            logger.info('Writing overrides from %s into %s...', os.path.basename(SEAHUB_SETTINGS_OVERRIDES_CONF_PATH), os.path.basename(SEAHUB_SETTINGS_PATH))
+            with open (SEAHUB_SETTINGS_OVERRIDES_CONF_PATH, "r") as overrides:
+                file.writelines([
+                    f'\n# Overrides imported from {os.path.basename(SEAHUB_SETTINGS_OVERRIDES_CONF_PATH)}:\n',
+                    overrides.read(),
                 ])
 
 def generate_saml_attribute_mapping() -> dict[str, tuple[str]]:
