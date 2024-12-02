@@ -88,6 +88,11 @@ log "Generating configuration files based on environment variables..."
 log "Checking seahub_settings.py for syntax errors..."
 python3 -m py_compile /opt/seafile/conf/seahub_settings.py
 
+if [[ -n "${SEAFILE__storage__storage_classes_file}" ]]; then
+    log "Checking $(basename ${SEAFILE__storage__storage_classes_file}) for syntax errors..."
+    python3 -m json.tool "${SEAFILE__storage__storage_classes_file}" > /dev/null
+fi
+
 # Link seafile.nginx.conf into /etc/nginx/sites-enabled/
 ln -sf /shared/nginx/conf/seafile.nginx.conf /etc/nginx/sites-enabled/seafile.nginx.conf
 
