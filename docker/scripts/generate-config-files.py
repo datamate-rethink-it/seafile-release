@@ -402,6 +402,22 @@ def generate_saml_attribute_mapping() -> dict[str, tuple[str]]:
 
 def generate_nginx_conf_file(path: str):
     config_template = """
+# Required for only office document server
+map $http_x_forwarded_proto $the_scheme {
+    default $http_x_forwarded_proto;
+    "" $scheme;
+}
+
+map $http_x_forwarded_host $the_host {
+    default $http_x_forwarded_host;
+    "" $host;
+}
+
+map $http_upgrade $proxy_connection {
+    default upgrade;
+    "" close;
+}
+
 server {
     %(listen_ipv6_directive)s
     listen 80;
@@ -470,11 +486,45 @@ server {
     location /media {
         root /opt/seafile/seafile-server-latest/seahub;
     }
+
+    location /onlyofficeds/ {
+        # THIS ONE IS IMPORTANT ! - Trailing slash !
+        proxy_pass http://onlyoffice:80/;
+
+        proxy_http_version 1.1;
+        client_max_body_size 100M; # Limit Document size to 100MB
+        proxy_read_timeout 3600s;
+        proxy_connect_timeout 3600s;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $proxy_connection;
+
+        # THIS ONE IS IMPORTANT ! - Subfolder and NO trailing slash !
+        proxy_set_header X-Forwarded-Host $the_host/onlyofficeds;
+
+        proxy_set_header X-Forwarded-Proto $the_scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
 }
 """
 
     if os.environ.get('SEAFILE_LOG_TO_STDOUT', 'false').lower() == 'true':
         config_template = """
+# Required for only office document server
+map $http_x_forwarded_proto $the_scheme {
+    default $http_x_forwarded_proto;
+    "" $scheme;
+}
+
+map $http_x_forwarded_host $the_host {
+    default $http_x_forwarded_host;
+    "" $host;
+}
+
+map $http_upgrade $proxy_connection {
+    default upgrade;
+    "" close;
+}
+
 server {
     %(listen_ipv6_directive)s
     listen 80;
@@ -542,6 +592,27 @@ server {
 
     location /media {
         root /opt/seafile/seafile-server-latest/seahub;
+    }
+
+    location /onlyofficeds/ {
+        # THIS ONE IS IMPORTANT ! - Trailing slash !
+        proxy_pass http://onlyoffice:80/;
+
+        proxy_http_version 1.1;
+        client_max_body_size 100M; # Limit Document size to 100MB
+        proxy_read_timeout 3600s;
+        proxy_connect_timeout 3600s;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $proxy_connection;
+
+        # THIS ONE IS IMPORTANT ! - Subfolder and NO trailing slash !
+        proxy_set_header X-Forwarded-Host $the_host/onlyofficeds;
+
+        proxy_set_header X-Forwarded-Proto $the_scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        access_log /dev/stdout seafileformat;
+        error_log /dev/stdout;
     }
 }
 """
