@@ -509,8 +509,16 @@ server {
     }
 
     location /onlyofficeds/ {
-        # THIS ONE IS IMPORTANT ! - Trailing slash !
-        proxy_pass http://onlyoffice:80/;
+        # 127.0.0.11 is Docker DNS; explicit DNS resolver is necessary since the upstream is optional
+        resolver 127.0.0.11 valid=30s;
+
+        # Variable to prevent "host not found in upstream" error
+        set $upstream_onlyoffice onlyoffice;
+
+        # rewrite is necessary; otherwise the path prefix is not stripped if the proxy_pass directive contains variables
+        # https://stackoverflow.com/a/71224059
+        rewrite /onlyofficeds/(.*) /$1 break;
+        proxy_pass http://$upstream_onlyoffice/$1$is_args$args;
 
         proxy_http_version 1.1;
         client_max_body_size 100M; # Limit Document size to 100MB
@@ -616,8 +624,16 @@ server {
     }
 
     location /onlyofficeds/ {
-        # THIS ONE IS IMPORTANT ! - Trailing slash !
-        proxy_pass http://onlyoffice:80/;
+        # 127.0.0.11 is Docker DNS; explicit DNS resolver is necessary since the upstream is optional
+        resolver 127.0.0.11 valid=30s;
+
+        # Variable to prevent "host not found in upstream" error
+        set $upstream_onlyoffice onlyoffice;
+
+        # rewrite is necessary; otherwise the path prefix is not stripped if the proxy_pass directive contains variables
+        # https://stackoverflow.com/a/71224059
+        rewrite /onlyofficeds/(.*) /$1 break;
+        proxy_pass http://$upstream_onlyoffice/$1$is_args$args;
 
         proxy_http_version 1.1;
         client_max_body_size 100M; # Limit Document size to 100MB
