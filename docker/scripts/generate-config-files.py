@@ -19,8 +19,8 @@ SEAFEVENTS_CONF_PATH = os.path.join(CONFIG_DIR, 'seafevents.conf')
 SEAFILE_CONF_PATH = os.path.join(CONFIG_DIR, 'seafile.conf')
 GUNICORN_CONF_PATH = os.path.join(CONFIG_DIR, 'gunicorn.conf.py')
 SEAHUB_SETTINGS_PATH = os.path.join(CONFIG_DIR, 'seahub_settings.py')
-SEAHUB_SETTINGS_OVERRIDES_CONF_PATH = os.path.join(CONFIG_DIR, 'seahub_settings_overrides.py')
-SEAFILE_ROLES_PATH = os.path.join(CONFIG_DIR, 'seafile_roles.json')
+SEAHUB_SETTINGS_OVERRIDES_CONF_PATH = '/tmp/seahub_settings_overrides.py'
+SEAFILE_ROLES_PATH = '/tmp/seafile_roles.json'
 NGINX_CONF_PATH = '/shared/nginx/conf/seafile.nginx.conf'
 
 REQUIRED_VARIABLES = [

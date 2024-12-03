@@ -30,6 +30,8 @@ services:
         source: "./seafile-license.txt"
         target: "/shared/seafile/seafile-license.txt"
         read_only: ${SEAFILE_LICENSE_FORCE_READ_ONLY:-false}
+      # - ./seafile_roles.json:/tmp/seafile_roles.json:ro
+      # - ./seahub_settings_overrides.py:/tmp/seahub_settings_overrides.py:ro
     depends_on:
       - mariadb
       - memcached
