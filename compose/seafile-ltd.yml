@@ -1,7 +1,7 @@
 ---
 services:
   seafile:
-    image: ${SEAFILE_IMAGE:-docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.16}
+    image: ${SEAFILE_IMAGE:-docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.18}
     restart: unless-stopped
     container_name: seafile-server
     environment:
