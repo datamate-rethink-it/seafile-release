@@ -138,7 +138,7 @@ def generate_conf_file(path: str, prefix: str):
         logger.info(f'Updating {os.path.basename(path)}')
 
     with open(path, 'w') as file:
-        config.write(CONFIG_FILE_WARNING)
+        file.write(CONFIG_FILE_WARNING)
         config.write(file)
 
 def generate_gunicorn_config_file(path: str):
