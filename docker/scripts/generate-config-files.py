@@ -23,6 +23,8 @@ SEAHUB_SETTINGS_OVERRIDES_CONF_PATH = '/tmp/seahub_settings_overrides.py'
 SEAFILE_ROLES_PATH = '/tmp/seafile_roles.json'
 NGINX_CONF_PATH = '/shared/nginx/conf/seafile.nginx.conf'
 
+CONFIG_FILE_WARNING = '# WARNING: This file will be regenerated on container startup. Any manual changes will be overwritten.\n\n'
+
 REQUIRED_VARIABLES = [
     'SEAFILE__notification__jwt_private_key',
     'SEAHUB__SECRET_KEY',
@@ -136,6 +138,7 @@ def generate_conf_file(path: str, prefix: str):
         logger.info(f'Updating {os.path.basename(path)}')
 
     with open(path, 'w') as file:
+        config.write(CONFIG_FILE_WARNING)
         config.write(file)
 
 def generate_gunicorn_config_file(path: str):
@@ -170,6 +173,8 @@ limit_request_line = 8190
         logger.info(f'Updating {os.path.basename(path)}')
 
     with open(path, 'w') as file:
+        file.write(CONFIG_FILE_WARNING)
+
         # Use lstrip() to remove leading whitespace
         file.write(config_template.lstrip() % config)
 
@@ -374,6 +379,8 @@ LOGGING = {
         logger.info(f'Updating {os.path.basename(path)}')
 
     with open(path, 'w') as file:
+        file.write(CONFIG_FILE_WARNING)
+
         file.write(database_config_template.lstrip() % database_config)
         file.write(cache_config_template % cache_config)
         file.write('\n')
@@ -665,6 +672,8 @@ server {
         logger.info(f'Updating {os.path.basename(path)}')
 
     with open(path, 'w') as file:
+        file.write(CONFIG_FILE_WARNING)
+
         # Use lstrip() to remove leading whitespace
         file.write(config_template.lstrip() % config)
 
