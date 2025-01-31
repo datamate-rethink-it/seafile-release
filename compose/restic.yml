@@ -1,7 +1,7 @@
 ---
 services:
   restic-backup:
-    image: ${SEAFILE_RESTIC_BACKUP_IMAGE:-seatable/restic-backup:1.2.9}
+    image: ${SEAFILE_RESTIC_BACKUP_IMAGE:-seatable/restic-backup:1.5.2}
     container_name: restic-backup
     restart: unless-stopped
     init: true
