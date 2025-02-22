@@ -1,31 +1,58 @@
 ---
 services:
   seafile:
-    image: ${SEAFILE_IMAGE:-datamate/seafile-professional:11.0.18}
+    image: ${SEAFILE_IMAGE:-datamate/seafile-professional:pre-12.0.9}
     restart: unless-stopped
     container_name: seafile-server
     environment:
-      - DB_HOST=mariadb
-      - DB_USER=${DB_USER:-root}
-      - DB_ROOT_PASSWD=${SEAFILE_MYSQL_ROOT_PASSWORD:?Variable is not set or empty}
       - TIME_ZONE=${TIME_ZONE}
-      - SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL:?Variable is not set or empty}
-      - SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD:?Variable is not set or empty}
+      - DB_HOST=${DB_HOST:-mariadb}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-seafile}
+      - DB_ROOT_PASSWD=${SEAFILE_MYSQL_ROOT_PASSWORD:?Variable is not set or empty}
+      - DB_PASSWORD=${DB_PASSWORD:-${SEAFILE_MYSQL_ROOT_PASSWORD}}
+
+      - SEAFILE_MYSQL_DB_CCNET_DB_NAME=${SEAFILE_MYSQL_DB_CCNET_DB_NAME:-ccnet_db}
+      - SEAFILE_MYSQL_DB_SEAFILE_DB_NAME=${SEAFILE_MYSQL_DB_SEAFILE_DB_NAME:-seafile_db}
+      - SEAFILE_MYSQL_DB_SEAHUB_DB_NAME=${SEAFILE_MYSQL_DB_SEAHUB_DB_NAME:-seahub_db}
+
       - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME}
-      - SEAFILE_SERVER_LETSENCRYPT=false
+      - SEAFILE_SERVER_PROTOCOL=${SEAFILE_SERVER_PROTOCOL:-https}
+
+      - INIT_SEAFILE_ADMIN_EMAIL=${SEAFILE_ADMIN_EMAIL:?Variable is not set or empty}
+      - INIT_SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD:?Variable is not set or empty}
+      
+      - SITE_ROOT=${SITE_ROOT:-/}
+      - NON_ROOT=${NON_ROOT:-false}
+      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY:?Variable is not set or empty}
+      
+      - ENABLE_SEADOC=${ENABLE_SEADOC:-true}
+      - SEADOC_SERVER_URL=${SEAFILE_SERVER_PROTOCOL:-https}://${SEAFILE_SERVER_HOSTNAME:?Variable is not set or empty}/sdoc-server
+
       - SEAFILE_LOG_TO_STDOUT=${SEAFILE_LOG_TO_STDOUT:-false}
-      - SEAFILE_LOG_LEVEL=${SEAFILE_LOG_LEVEL:-WARNING}
-      - SEAFILE__notification__jwt_private_key=${SEAFILE__notification__jwt_private_key:?Variable is not set or empty}
-      - SEAHUB__SECRET_KEY=${SEAHUB__SECRET_KEY:?Variable is not set or empty}
-      - FORCE_HTTPS_IN_CONF=true
+      #- SEAFILE_LOG_LEVEL=${SEAFILE_LOG_LEVEL:-WARNING}
+      #- SEAFILE__notification__jwt_private_key=${SEAFILE__notification__jwt_private_key:?Variable is not set or empty}
+      #- SEAHUB__SECRET_KEY=${SEAHUB__SECRET_KEY:?Variable is not set or empty}
       - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
+      - INIT_S3_STORAGE_BACKEND_CONFIG=${INIT_S3_STORAGE_BACKEND_CONFIG:-false}
+      - INIT_S3_COMMIT_BUCKET=${INIT_S3_COMMIT_BUCKET:-}
+      - INIT_S3_FS_BUCKET=${INIT_S3_FS_BUCKET:-}
+      - INIT_S3_BLOCK_BUCKET=${INIT_S3_BLOCK_BUCKET:-}
+      - INIT_S3_KEY_ID=${INIT_S3_KEY_ID:-}
+      - INIT_S3_SECRET_KEY=${INIT_S3_SECRET_KEY:-}
+      - INIT_S3_USE_V4_SIGNATURE=${INIT_S3_USE_V4_SIGNATURE:-true}
+      - INIT_S3_AWS_REGION=${INIT_S3_AWS_REGION:-us-east-1}
+      - INIT_S3_HOST=${INIT_S3_HOST:-us-east-1}
+      - INIT_S3_USE_HTTPS=${INIT_S3_USE_HTTPS:-true}
+
     env_file:
       - path: /opt/seafile-compose/.env
     labels:
       caddy: ${SEAFILE_SERVER_HOSTNAME}
       caddy.reverse_proxy: "{{upstreams 80}}"
     volumes:
-      - /opt/seafile-server:/shared
+      - ${SEAFILE_VOLUME:-/opt/seafile-server}:/shared
       - type: bind
         source: "./seafile-license.txt"
         target: "/shared/seafile/seafile-license.txt"
@@ -54,7 +81,7 @@ services:
       - MYSQL_LOG_CONSOLE=true
       - MARIADB_AUTO_UPGRADE=1
     volumes:
-      - /opt/mariadb/db:/var/lib/mysql
+      - ${SEAFILE_MARIADB_VOLUME:-/opt/mariadb/db}:/var/lib/mysql
     networks:
       - backend-seafile-net
     healthcheck:

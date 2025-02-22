@@ -1,0 +1,40 @@
+---
+services:
+  seadoc:
+    image: ${SEADOC_IMAGE:-seafileltd/sdoc-server:1.0-latest}
+    container_name: seadoc
+    volumes:
+      - ${SEADOC_VOLUME:-/opt/seadoc-data/}:/shared
+    environment:
+      - DB_HOST=${DB_HOST:-mariadb}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-seafile}
+      - DB_PASSWORD=${DB_PASSWORD:-${SEAFILE_MYSQL_ROOT_PASSWORD}}
+      - DB_NAME=${SEADOC_MYSQL_DB_NAME:-seahub_db}
+      - TIME_ZONE=${TIME_ZONE}
+      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY:?Variable is not set or empty}
+      - NON_ROOT=${NON_ROOT:-false}
+      - SEAHUB_SERVICE_URL=${SEAFILE_SERVER_PROTOCOL:-https}://${SEAFILE_SERVER_HOSTNAME:?Variable is not set or empty}
+    labels:
+      caddy: ${SEAFILE_SERVER_HOSTNAME:?Variable is not set or empty}
+      caddy.@ws.0_header: "Connection *Upgrade*"
+      caddy.@ws.1_header: "Upgrade websocket"
+      caddy.0_reverse_proxy: "@ws {{upstreams 80}}"
+      caddy.1_handle_path: "/socket.io/*"
+      caddy.1_handle_path.0_rewrite: "* /socket.io{uri}"
+      caddy.1_handle_path.1_reverse_proxy: "{{upstreams 80}}"
+      caddy.2_handle_path: "/sdoc-server/*"
+      caddy.2_handle_path.0_rewrite: "* {uri}"
+      caddy.2_handle_path.1_reverse_proxy: "{{upstreams 80}}"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - frontend-net
+      - backend-seafile-net
+
+networks:
+  frontend-net:
+    name: frontend-net
+  backend-seafile-net:
+    name: backend-seafile-net
