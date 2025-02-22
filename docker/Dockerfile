@@ -1,6 +1,7 @@
-FROM docker.seadrive.org/seafileltd/seafile-pro-mc:11.0.18
+FROM docker.seadrive.org/seafileltd/seafile-pro-mc:12.0.9
 
-COPY scripts/* /scripts
+# das baue ich später wieder ein
+#COPY scripts/* /scripts
 
 # Disable buffered I/O since it can cause logs to appearch much later
 # Performance impact should be negligible
