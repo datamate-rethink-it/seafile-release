@@ -1,0 +1,26 @@
+---
+services:
+  elasticsearch:
+    image: ${ELASTICSEARCH_IMAGE:-elasticsearch:8.6.2}
+    restart: unless-stopped
+    container_name: seafile-elasticsearch
+    environment:
+      - "discovery.type=single-node"
+      - "bootstrap.memory_lock=true"
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "xpack.security.enabled=false"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 2g
+    volumes:
+      - /opt/seafile-elasticsearch/data:/usr/share/elasticsearch/data
+    networks:
+      - backend-seafile-net
+    healthcheck:
+      test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+      interval: 60s
+      start_period: 60s
+      timeout: 10s
+      retries: 3
