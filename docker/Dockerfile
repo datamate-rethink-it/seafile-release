@@ -1,4 +1,4 @@
-FROM seafileltd/seafile-pro-mc:12.0.9
+FROM seafileltd/seafile-pro-mc:12.0.12
 
 # das baue ich später wieder ein
 #COPY scripts/* /scripts
