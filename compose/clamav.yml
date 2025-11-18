@@ -1,7 +1,7 @@
 ---
 services:
   av:
-    image: ${CLAMAV_IMAGE:-clamav/clamav:1.2.3-55}
+    image: ${CLAMAV_IMAGE:-clamav/clamav:latest}
     restart: unless-stopped
     container_name: seafile-clamav
     networks:
